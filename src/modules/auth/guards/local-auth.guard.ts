@@ -4,7 +4,7 @@ import { ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/com
 import { AuthGuard } from "@nestjs/passport";
 import { Observable } from "rxjs";
 import { AuthErrors } from "../responses";
-import { User } from "../entities/user.entity";
+import { User } from "../entities";
 
 @Injectable()
 export class LocalAuthGuard extends AuthGuard("local") {

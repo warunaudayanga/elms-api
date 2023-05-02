@@ -1,7 +1,7 @@
-import { User } from "../../auth/entities/user.entity";
+import { AppEvent } from "../../../core/enums/app-event.enum";
 
-export interface WSMessage<T = any> {
-    type?: string;
+export interface WSMessage<Event = AppEvent, T = any> {
+    rid: string;
+    event: Event;
     data?: T;
-    user: User;
 }

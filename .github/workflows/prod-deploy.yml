@@ -1,0 +1,89 @@
+on:
+  push:
+    branches:
+      - master
+
+  workflow_dispatch:
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - run: npm install --legacy-peer-deps
+      - run: npm run build
+
+      - name: Delete old directory
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          command: rm -rf ~/env/prod/elms/elms-api
+
+      - name: Create directory
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          command: mkdir -p ~/env/prod/elms/elms-api
+
+      - name: Copy API dependencies to production environment
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          rm: true
+          source: node_modules/*
+          target: ~/env/prod/elms/elms-api
+
+      - name: Copy source to production environment
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          source: dist/*
+          target: ~/env/prod/elms/elms-api
+
+      - name: Copy migrations to production environment
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          source: migrations/*
+          target: ~/env/prod/elms/elms-api
+
+      - name: Copy .env if exists
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          command: cp ~/env/prod/elms/elms.env ~/env/prod/elms/elms-api/.env
+
+      - name: Run Migrations
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          command: cd ~/env/prod/elms/elms-api && sudo ts-node ./node_modules/typeorm/cli.js -d ./dist/core/config/ormconfig-migrations.js migration:run
+
+      - name: Restart Application
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          command: sudo supervisorctl restart elms_prod_api_3000

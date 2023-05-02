@@ -1,17 +1,18 @@
 import { BaseRepository } from "./entity.repository";
-import { FindOneOptions, SaveOptions } from "typeorm";
+import { EntityManager, FindOneOptions, SaveOptions } from "typeorm";
 import { DeepPartial } from "typeorm/common/DeepPartial";
 import { EntityUtils } from "./entity.utils";
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 import { NotFoundException } from "@nestjs/common";
 import {
+    FindConditions,
+    GetAll,
+    GetByIds,
+    GetMany,
+    GetOne,
+    IBaseEntity,
     IPaginatedResponse,
     IStatusResponse,
-    IBaseEntity,
-    FindConditions,
-    GetMany,
-    GetAll,
-    GetOne,
 } from "./interfaces";
 import { Operation } from "./entity.enums";
 import { EntityErrors } from "./entity.error.responses";
@@ -30,15 +31,14 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
 
     // abstract map(entity: Entity): Entity;
 
-    async create<T extends DeepPartial<Entity>>(
+    async save<T extends DeepPartial<Entity>>(
         createDto: T,
-        options?: SaveOptions,
-        relations?: string[],
+        options?: SaveOptions & FindOneOptions<Entity>,
+        manager?: EntityManager,
         eh?: EH,
     ): Promise<Entity> {
         try {
-            const entity = await this.repository.save(createDto, options);
-            return this.get(entity.id, { relations });
+            return await this.repository.saveAndGet(createDto, { ...options }, manager);
         } catch (e: any) {
             if (eh) {
                 const err = eh(e);
@@ -50,9 +50,14 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
         }
     }
 
-    async createMany<T extends DeepPartial<Entity>>(createDto: T[], options?: SaveOptions, eh?: EH): Promise<Entity[]> {
+    async saveMany<T extends DeepPartial<Entity>>(
+        createDto: T[],
+        options?: SaveOptions,
+        manager?: EntityManager,
+        eh?: EH,
+    ): Promise<Entity[]> {
         try {
-            return await this.repository.saveMany(createDto, options);
+            return await this.repository.saveMany(createDto, options, manager);
         } catch (e: any) {
             if (eh) {
                 const err = eh(e);
@@ -67,12 +72,14 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
     async update<T extends QueryDeepPartialEntity<Entity>>(
         id: number,
         updateDto: T,
+        options?: FindOneOptions<Entity>,
+        manager?: EntityManager,
         eh?: EH,
-    ): Promise<IStatusResponse> {
+    ): Promise<Entity> {
         try {
-            const { affected } = await this.repository.update(id, updateDto);
+            const { affected } = await this.repository.update(id, updateDto, manager);
             if (affected !== 0) {
-                return EntityUtils.handleSuccess(Operation.UPDATE, this.entityName);
+                return this.get(id, options, manager);
             }
             return Promise.reject(new NotFoundException(EntityErrors.E_404_ID(this.entityName)));
         } catch (e: any) {
@@ -89,10 +96,11 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
     async updateOne<T extends QueryDeepPartialEntity<Entity>>(
         conditions: FindConditions<Entity>,
         updateDto: T,
+        manager?: EntityManager,
         eh?: EH,
     ): Promise<IStatusResponse> {
         try {
-            const { affected } = await this.repository.updateOne(conditions, updateDto);
+            const { affected } = await this.repository.updateOne(conditions, updateDto, manager);
             if (affected !== 0) {
                 return EntityUtils.handleSuccess(Operation.UPDATE, this.entityName);
             }
@@ -111,10 +119,11 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
     async updateMany<T extends QueryDeepPartialEntity<Entity>>(
         conditions: FindConditions<Entity>,
         updateDto: T,
+        manager?: EntityManager,
         eh?: EH,
     ): Promise<IStatusResponse> {
         try {
-            const { affected } = await this.repository.updateMany(conditions, updateDto);
+            const { affected } = await this.repository.updateMany(conditions, updateDto, manager);
             if (affected !== 0) {
                 return EntityUtils.handleSuccess(Operation.UPDATE, this.entityName);
             }
@@ -132,10 +141,11 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
     async updateByIds<T extends QueryDeepPartialEntity<Entity>>(
         ids: number[],
         updateDto: T,
+        manager?: EntityManager,
         eh?: EH,
     ): Promise<IStatusResponse> {
         try {
-            const { affected } = await this.repository.updateByIds(ids, updateDto);
+            const { affected } = await this.repository.updateByIds(ids, updateDto, manager);
             if (affected !== 0) {
                 return EntityUtils.handleSuccess(Operation.UPDATE, this.entityName);
             }
@@ -150,9 +160,9 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
         }
     }
 
-    async get(id: number, options?: FindOneOptions<Entity>, eh?: EH): Promise<Entity> {
+    async get(id: number, options?: FindOneOptions<Entity>, manager?: EntityManager, eh?: EH): Promise<Entity> {
         try {
-            const entity = await this.repository.get(id, options);
+            const entity = await this.repository.get(id, options, manager);
             if (entity) {
                 return entity;
             }
@@ -168,9 +178,10 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
         }
     }
 
-    async getOne(getOne: GetOne<Entity>, eh?: EH): Promise<Entity> {
+    async getOne(getOne: GetOne<Entity>, manager?: EntityManager, eh?: EH): Promise<Entity> {
         try {
-            const entity = await this.repository.getOne(getOne);
+            getOne.where = { ...(getOne.where ?? {}), deletedAt: null };
+            const entity = await this.repository.getOne(getOne, manager);
             if (entity) {
                 return entity;
             }
@@ -186,10 +197,9 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
         }
     }
 
-    async getMany(getMany: GetMany<Entity>, eh?: EH): Promise<IPaginatedResponse<Entity>> {
+    async getByIds(getByIds: GetByIds<Entity>, manager?: EntityManager, eh?: EH): Promise<Entity[]> {
         try {
-            let [data, rowCount] = await this.repository.getMany(getMany);
-            return { data, rowCount };
+            return await this.repository.getByIds(getByIds, manager);
         } catch (e: any) {
             if (eh) {
                 const err = eh(e);
@@ -201,11 +211,63 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
         }
     }
 
-    async getWithoutPage(getMany: Omit<GetMany<Entity>, "pagination">, eh?: EH): Promise<Entity[]> {
+    async getMany(
+        getMany: GetMany<Entity>,
+        manager?: EntityManager,
+        eh?: EH,
+    ): Promise<IPaginatedResponse<Entity> | Entity[]> {
         try {
-            getMany.options.skip = undefined;
-            getMany.options.take = undefined;
-            let [data] = await this.repository.getMany({ ...getMany });
+            let [data, rowCount] = await this.repository.getMany(
+                {
+                    ...getMany,
+                    where: { ...(getMany.where ?? {}), deletedAt: null },
+                },
+                manager,
+            );
+            return getMany.pagination ? { data, rowCount } : data;
+        } catch (e: any) {
+            if (eh) {
+                const err = eh(e);
+                if (e) {
+                    throw err;
+                }
+            }
+            EntityUtils.handleError(e, this.entityName, this.uniqueFieldName);
+        }
+    }
+
+    async getAll(
+        getAll: GetAll<Entity>,
+        manager?: EntityManager,
+        eh?: EH,
+    ): Promise<IPaginatedResponse<Entity> | Entity[]> {
+        try {
+            let [data, rowCount] = await this.repository.getMany({ ...getAll, where: { deletedAt: null } }, manager);
+            return getAll.pagination ? { data, rowCount } : data;
+        } catch (e: any) {
+            if (eh) {
+                const err = eh(e);
+                if (e) {
+                    throw err;
+                }
+            }
+            EntityUtils.handleError(e, this.entityName, this.uniqueFieldName);
+        }
+    }
+
+    async getWithoutPage(
+        getMany?: Omit<GetMany<Entity>, "pagination">,
+        manager?: EntityManager,
+        eh?: EH,
+    ): Promise<Entity[]> {
+        try {
+            if (getMany?.options?.skip) {
+                getMany.options.skip = undefined;
+            }
+            if (getMany?.options?.take) {
+                getMany.options.take = undefined;
+            }
+            let [data] = await this.repository.getMany(getMany, manager);
             return data;
         } catch (e: any) {
             if (eh) {
@@ -218,31 +280,47 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
         }
     }
 
-    async getAll(getAll: GetAll<Entity>, eh?: EH): Promise<IPaginatedResponse<Entity>> {
-        const { relations, pagination, sort, options } = getAll;
+    async delete(id: number, deletedBy: User, wipe?: boolean, manager?: EntityManager, eh?: EH): Promise<Entity> {
         try {
-            const getMany: GetMany<Entity> = { where: {}, relations, pagination, sort, options };
-            let [data, rowCount] = await this.repository.getMany(getMany);
-            return { data, rowCount };
-        } catch (e: any) {
-            if (eh) {
-                const err = eh(e);
-                if (e) {
-                    throw err;
-                }
-            }
-            EntityUtils.handleError(e, this.entityName, this.uniqueFieldName);
-        }
-    }
-
-    async delete(id: number, deletedBy: User, wipe?: boolean, eh?: EH): Promise<IStatusResponse> {
-        try {
-            const { affected } = wipe ? await this.repository.hardDelete(id) : await this.repository.delete(id);
+            const deletedRecord = await this.get(id, undefined, manager);
+            const { affected } = wipe
+                ? await this.repository.hardDelete(id, manager)
+                : await this.repository.delete(id, manager);
             if (affected !== 0) {
                 if (!wipe && deletedBy) {
                     try {
-                        await this.update(id, { deletedBy } as any);
+                        await this.update(id, { deletedBy } as any, undefined, manager);
                     } catch (err: any) {}
+                    return deletedRecord;
+                }
+                // return EntityUtils.handleSuccess(Operation.DELETE, this.entityName);
+            }
+            return Promise.reject(new NotFoundException(EntityErrors.E_404_ID(this.entityName)));
+        } catch (e: any) {
+            if (eh) {
+                const err = eh(e);
+                if (e) {
+                    throw err;
+                }
+            }
+            EntityUtils.handleError(e, this.entityName, this.uniqueFieldName);
+        }
+    }
+
+    async deleteByIds(
+        ids: number[],
+        deletedBy?: User,
+        wipe?: boolean,
+        manager?: EntityManager,
+        eh?: EH,
+    ): Promise<IStatusResponse> {
+        try {
+            const { affected } = wipe
+                ? await this.repository.hardDeleteByIds(ids, manager)
+                : await this.repository.deleteByIds(ids, manager);
+            if (affected !== 0) {
+                if (!wipe && deletedBy) {
+                    await this.updateByIds(ids, { deletedBy } as any, manager);
                 }
                 return EntityUtils.handleSuccess(Operation.DELETE, this.entityName);
             }
@@ -258,18 +336,10 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
         }
     }
 
-    async deleteByIds(ids: number[], deletedBy?: User, wipe?: boolean, eh?: EH): Promise<IStatusResponse> {
+    async count(getMany?: GetMany<Entity>, manager?: EntityManager, eh?: EH): Promise<number> {
         try {
-            const { affected } = wipe
-                ? await this.repository.hardDeleteByIds(ids)
-                : await this.repository.deleteByIds(ids);
-            if (affected !== 0) {
-                if (!wipe && deletedBy) {
-                    await this.updateByIds(ids, { deletedBy } as any);
-                }
-                return EntityUtils.handleSuccess(Operation.DELETE, this.entityName);
-            }
-            return Promise.reject(new NotFoundException(EntityErrors.E_404_ID(this.entityName)));
+            getMany.where = { ...(getMany.where ?? {}), deletedAt: null };
+            return await this.repository.count(getMany, manager);
         } catch (e: any) {
             if (eh) {
                 const err = eh(e);

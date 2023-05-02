@@ -1,6 +1,6 @@
 import { CACHE_MANAGER, Inject, Injectable } from "@nestjs/common";
 import { Cache } from "cache-manager";
-import { User } from "../../auth/entities/user.entity";
+import { User } from "../../auth/entities";
 import configuration from "../../../core/config/configuration";
 
 const USER_PREFIX = `${configuration().redis.prefix}-user`;
@@ -9,15 +9,15 @@ const USER_PREFIX = `${configuration().redis.prefix}-user`;
 export class RedisCacheService {
     constructor(@Inject(CACHE_MANAGER) private readonly cache: Cache) {}
 
-    private async get<T = unknown>(key: string): Promise<T | undefined> {
+    async get<T = unknown>(key: string): Promise<T | null> {
         return await this.cache.get<T>(key);
     }
 
-    private async set<T = unknown>(key: string, value: T): Promise<void> {
+    async set<T = unknown>(key: string, value: T): Promise<void> {
         return await this.cache.set(key, value);
     }
 
-    private async delete(key: string): Promise<void> {
+    async delete(key: string): Promise<void> {
         return await this.cache.del(key);
     }
 

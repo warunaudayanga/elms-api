@@ -3,7 +3,7 @@
 import { ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { AuthErrors } from "../responses";
-import { User } from "../entities/user.entity";
+import { User } from "../entities";
 import { ExtractJwt } from "passport-jwt";
 import { ACCESS_TOKEN_COOKIE_NAME, AuthService, REFRESH_TOKEN_COOKIE_NAME } from "../services";
 import { cookieExtractor } from "../utils/auth.extractors";

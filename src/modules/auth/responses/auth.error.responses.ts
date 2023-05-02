@@ -32,7 +32,7 @@ const AuthErrors = {
     AUTH_401_NOT_ACTIVE: {
         status: 401,
         code: "AUTH_401_NOT_ACTIVE",
-        message: "User account is inactive. Contact a Moderator or Admin!",
+        message: "Your account has been disabled. Contact us if you think this is a mistake!",
     },
     AUTH_401_TOKEN_NOT_SET: {
         status: 401,
@@ -57,7 +57,9 @@ const AuthErrors = {
     AUTH_403_PENDING: {
         status: 401,
         code: "AUTH_403_PENDING",
-        message: "Your application is still processing. you will be getting a confirmation soon via e-mail.!",
+        message:
+            "Please verify your email address to continue. If you didn't receive the email you can click " +
+            "the resend verification button to receive it again!",
     },
     AUTH_403_ROLE_FORBIDDEN: {
         status: 403,

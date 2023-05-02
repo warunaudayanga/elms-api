@@ -2,8 +2,17 @@
 
 export enum Endpoint {
     AUTH = "auth",
-    ROLE = "role",
+    ZOOM = "zoom",
+    STRIPE = "stripe",
     USER = "user",
     COMMON = "common",
-    PROFILE = "profile",
+    GRADE = "grade",
+    SUBJECT = "subject",
+    CLASS_ROOM = "class-room",
+    CLASS_SCHEDULE = "schedule",
+    ASSESSMENT = "assessment",
+    ASSESSMENT_SUBMISSION = "assessment-submission",
+    ME = "me",
+    TUTOR = "tutor",
+    STUDENT = "student",
 }

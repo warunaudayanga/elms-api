@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Post, Res, UseGuards, UseInterceptors } from "@nestjs/common";
 import { Response } from "express";
 import { ACCESS_TOKEN_COOKIE_NAME, AuthService, REFRESH_TOKEN_COOKIE_NAME } from "../services";
 import { User } from "src/modules/auth/entities/user.entity";
@@ -13,7 +13,6 @@ import { RedisCacheService } from "../../cache/services/redis-cache.service";
 import configuration from "../../../core/config/configuration";
 import { SuccessResponse } from "../../../core/responses";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { MulterFile } from "../../../core/interfaces/multer-file";
 
 @Controller(Endpoint.AUTH)
 export class AuthController {
@@ -21,8 +20,8 @@ export class AuthController {
 
     @Post("register")
     @UseInterceptors(FileInterceptor("application"))
-    register(@Body() createUserDto: CreateUserDto, @UploadedFile() application?: MulterFile): Promise<User> {
-        return this.authService.registerUser(createUserDto, application);
+    register(@Body() createUserDto: CreateUserDto): Promise<User> {
+        return this.authService.registerUser(createUserDto);
     }
 
     @Post("login")

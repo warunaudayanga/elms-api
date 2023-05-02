@@ -1,0 +1,14 @@
+// export * from "./area.entity";
+// export * from "./assessment.entity";
+// export * from "./assessment-submissions.entity";
+// export * from "./chat-room.entity";
+// export * from "./class-room.entity";
+// export * from "./class-students.entity";
+// export * from "./grade.entity";
+// export * from "./message.entity";
+// export * from "./message-user-status.entity";
+// export * from "./payment.entity";
+// export * from "./schedule.entity";
+// export * from "./schedule-history.entity";
+// export * from "./subject.entity";
+// export * from "./tutor.entity";

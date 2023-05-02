@@ -10,50 +10,36 @@ import { JwtService } from "@nestjs/jwt";
 import { ITokenData, ITokenResponse } from "../interfaces";
 import { AuthErrors } from "../responses";
 import { User } from "src/modules/auth/entities/user.entity";
-import { CreateUserDto } from "src/modules/auth/dtos";
 import { LoggerService } from "src/core/services";
-import { EntityErrors, IQueryError, IStatusResponse } from "src/core/entity";
+import { EntityErrors, EntityUtils, IQueryError, IStatusResponse, Operation } from "src/core/entity";
 import { Status } from "src/core/enums";
 import { EventEmitter2, OnEvent } from "@nestjs/event-emitter";
-import { Events } from "src/modules/webhook/enums/events.enum";
+import { WebhookEvent } from "src/modules/webhook/enums/webhook-event.enum";
 import { UpdatePasswordDto } from "../dtos";
 import { UserService } from "./user.service";
-import { RoleService } from "./role.service";
-import { DefaultRoles } from "../enums";
+import { Role } from "../enums";
 import configuration from "../../../core/config/configuration";
 import { RedisCacheService } from "../../cache/services/redis-cache.service";
-import { MulterFile } from "../../../core/interfaces/multer-file";
 import { FileUploadService } from "../../file-upload/file-upload.service";
+import { CreateTutorDto } from "../dtos/create-tutor.dto";
+import { TutorRepository } from "../../../elms/modules/class-room/repositories";
+import { userRelations } from "../repositories";
+import { AppEvent } from "../../../core/enums/app-event.enum";
+import { EntityManager } from "typeorm";
 
 export const ACCESS_TOKEN_COOKIE_NAME = "Authorization";
 export const REFRESH_TOKEN_COOKIE_NAME = "Refresh";
 
-export const userRelations = ["role", "profile"];
-
 @Injectable()
 export class AuthService {
-    // private static keyPath = join(__dirname, "../config/keys");
-
-    // private static PRV_KEY = readFileSync(join(AuthService.keyPath, "id_rsa_prv.pem"), "utf8");
-
-    // private static PUB_KEY = readFileSync(join(AuthService.keyPath, "id_rsa_pub.pem"), "utf8");
-
     constructor(
         private readonly userService: UserService,
         private readonly cacheService: RedisCacheService,
-        private readonly roleService: RoleService,
         private readonly jwtService: JwtService,
         private readonly fileUploadService: FileUploadService,
         private readonly eventEmitter: EventEmitter2,
+        private readonly tutorRepository: TutorRepository,
     ) {}
-
-    // public static getPrivateKey(): string {
-    //     return AuthService.PRV_KEY;
-    // }
-
-    // public static getPublicKey(): string {
-    //     return AuthService.PUB_KEY;
-    // }
 
     // noinspection JSUnusedGlobalSymbols
     public static generateRandomHash(): string {
@@ -75,30 +61,39 @@ export class AuthService {
         return this.jwtService.sign(payload, { secret, expiresIn: `${expiresIn}s` });
     }
 
-    async registerUser(createUserDto: CreateUserDto, application?: MulterFile, createdBy?: User): Promise<User> {
-        const { username, password: rawPass, ...createProfileDto } = createUserDto;
+    async registerUser(createUserDto: Partial<User>, createdBy?: User, manager?: EntityManager): Promise<User> {
+        const { password: rawPass, areaId, ...rest } = createUserDto;
         const { password, salt } = AuthService.generatePassword(rawPass);
-        const role = await this.roleService.getOne({ where: { name: DefaultRoles.USER } });
         // createProfileDto.application = await this.fileUploadService.upload(application, FileType.APPLICATION);
         const eh = (e: IQueryError): Error | void => {
-            if (e.sqlMessage?.match("users.USERNAME")) {
-                return new ConflictException(EntityErrors.E_409_EXIST_U("user", "username"));
+            if (e.sqlMessage?.match("users.UNIQUE_user_email")) {
+                return new ConflictException(EntityErrors.E_409_EXIST_U("user", "email"));
             }
         };
-        // const [profile] = (await this.eventEmitter.emitAsync(UserEvent.USER_BEFORE_REGISTER, createProfileDto)) as [
-        //     BaseProfile,
-        // ];
-        // if (profile) {
-        //
-        // }
-        let user = await this.userService.create(
-            { username, password, salt, role, status: Status.PENDING, profile: createProfileDto, createdBy },
-            null,
-            null,
+        let user = await this.userService.save(
+            {
+                ...rest,
+                password,
+                salt,
+                role: rest.role || Role.STUDENT,
+                status: rest.status || Status.PENDING,
+                createdBy,
+                area: { id: areaId },
+            },
+            { relations: userRelations },
+            manager,
             eh,
         );
-        this.eventEmitter.emit(Events.USER_REGISTERED, user);
+        this.eventEmitter.emit(WebhookEvent.USER_REGISTERED, user);
         return user;
+    }
+
+    async createTutor(createTutorDto: CreateTutorDto, createdBy: User): Promise<User> {
+        const tutor = await this.tutorRepository.save({ createdBy });
+        return await this.registerUser(
+            { ...createTutorDto, status: Status.ACTIVE, role: Role.TUTOR, tutor },
+            createdBy,
+        );
     }
 
     async authenticate(username: string, password: string): Promise<User> {
@@ -128,7 +123,8 @@ export class AuthService {
         const { oldPassword, newPassword } = updatePasswordDto;
         if (AuthService.verifyHash(oldPassword, password, salt)) {
             const { password, salt } = AuthService.generatePassword(newPassword);
-            return this.userService.update(id, { password, salt });
+            await this.userService.update(id, { password, salt });
+            return EntityUtils.handleSuccess(Operation.UPDATE, "user");
         }
         throw new NotFoundException(AuthErrors.AUTH_401_INVALID_PASSWORD);
     }
@@ -136,8 +132,7 @@ export class AuthService {
     generateTokens(user: User): ITokenResponse {
         const payload: ITokenData = {
             sub: user.id,
-            email: user.profile.email,
-            profileId: user.profile.id,
+            email: user.email,
         };
         const accessToken: string = this.generateToken(
             payload,
@@ -158,13 +153,13 @@ export class AuthService {
         };
     }
 
-    public verifyToken(token: string, refresh?: boolean): { sub: number; email: number; profileId: number } {
+    public verifyToken(token: string, refresh?: boolean): { sub: number; email: number } {
         return this.jwtService.verify(token, {
             secret: refresh ? configuration().jwt.refreshSecret : configuration().jwt.secret,
         });
     }
 
-    @OnEvent(Events.USER_GET_BY_TOKEN)
+    @OnEvent(AppEvent.USER_GET_BY_TOKEN)
     public async getUserByToken(bearerToken: string, refresh?: boolean): Promise<User> {
         try {
             const payload = this.verifyToken(bearerToken, refresh);
