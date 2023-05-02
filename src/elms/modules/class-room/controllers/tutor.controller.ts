@@ -5,7 +5,6 @@ import { Pager, ReqUser, Roles, Sorter } from "../../../../core/decorators";
 import { RoleGuard } from "../../../../core/guards/role.guard";
 import { Role } from "../../../../modules/auth/enums";
 import { User } from "../../../../modules/auth/entities";
-import { Assessment, ClassRoom, ClassSchedule } from "../entities";
 import { IPaginatedResponse, IPagination, ISort } from "../../../../core/entity";
 import {
     FilterClassRoomDto,
@@ -15,6 +14,9 @@ import {
     UpdateClassRoomDto,
     UpdateAssessmentDto,
 } from "../dtos";
+import { Assessment } from "../entities/assessment.entity";
+import { ClassRoom } from "../entities/class-room.entity";
+import { ClassSchedule } from "../entities/schedule.entity";
 import { TutorService } from "../services";
 
 @Controller(Endpoint.TUTOR)

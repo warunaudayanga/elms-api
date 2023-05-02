@@ -1,15 +1,15 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
-import { Endpoint } from "../../../../core/enums";
-import { JwtAuthGuard } from "../../../../modules/auth/guards";
 import { Pager, ReqUser, Roles, Sorter } from "../../../../core/decorators";
-import { IPaginatedResponse, IPagination, ISort, IStatusResponse } from "../../../../core/entity";
 import { BulkDeleteDto, UpdateStatusDto } from "../../../../core/dtos";
+import { IPaginatedResponse, IPagination, ISort, IStatusResponse } from "../../../../core/entity";
+import { Endpoint } from "../../../../core/enums";
 import { RoleGuard } from "../../../../core/guards/role.guard";
-import { Role } from "../../../../modules/auth/enums";
 import { User } from "../../../../modules/auth/entities";
-import { Grade } from "../entities";
+import { Role } from "../../../../modules/auth/enums";
+import { JwtAuthGuard } from "../../../../modules/auth/guards";
+import { CreateGradeDto, FilterClassRoomDto, UpdateGradeDto } from "../dtos";
+import { Grade } from "../entities/grade.entity";
 import { GradeService } from "../services";
-import { FilterClassRoomDto, CreateGradeDto, UpdateGradeDto } from "../dtos";
 
 @Controller(Endpoint.GRADE)
 export class GradeController {

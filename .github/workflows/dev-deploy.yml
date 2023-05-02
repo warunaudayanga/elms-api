@@ -76,18 +76,18 @@ jobs:
               cp ~/env/dev/elms/elms.env ~/env/dev/elms/elms-api/.env
             fi
 
-#      - name: Run Migrations
-#        uses: garygrossgarten/github-action-ssh@release
-#        with:
-#          host: ${{ secrets.HOST }}
-#          username: ${{ secrets.USERNAME }}
-#          password: ${{ secrets.PASSWORD }}
-#          command: cd ~/env/dev/lectures_backend && sudo ts-node ./node_modules/typeorm/cli.js -f ./dist/core/config/ormconfig-migrations.js migration:run
+      - name: Run Migrations
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          command: cd ~/env/dev/elms/elms-api && sudo ts-node ./node_modules/typeorm/cli.js -f ./dist/core/config/ormconfig-migrations.js migration:run
 
-#      - name: Restart Application
-#        uses: garygrossgarten/github-action-ssh@release
-#        with:
-#          host: ${{ secrets.HOST }}
-#          username: ${{ secrets.USERNAME }}
-#          password: ${{ secrets.PASSWORD }}
-#          command: sudo supervisorctl restart dev_lectures_backend_3000
+      - name: Restart Application
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          command: sudo supervisorctl restart elms_dev_api_8080

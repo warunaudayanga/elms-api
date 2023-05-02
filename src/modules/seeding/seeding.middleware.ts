@@ -1,12 +1,12 @@
 import { Injectable, NestMiddleware } from "@nestjs/common";
 import { NextFunction, Request, Response } from "express";
 import { EntityManager } from "typeorm";
+import { Area } from "../../elms/modules/class-room/entities/area.entity";
 import { AuthService } from "../auth/services";
 import { DeepPartial } from "typeorm/common/DeepPartial";
 import { User } from "../auth/entities";
 import { Status } from "../../core/enums";
 import { Role } from "../auth/enums";
-import { Area } from "../../elms/modules/class-room/entities";
 import { District } from "../../elms/modules/class-room/enums";
 
 @Injectable()

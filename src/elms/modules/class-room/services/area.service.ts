@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityService } from "src/core/entity";
 import { SocketService } from "src/modules/socket/services/socket.service";
-import { Area } from "../entities";
+import { Area } from "../entities/area.entity";
 import { AreaRepository } from "../repositories";
 
 @Injectable()

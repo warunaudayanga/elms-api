@@ -8,7 +8,7 @@ import { User } from "../../../../modules/auth/entities";
 import { Role } from "../../../../modules/auth/enums";
 import { JwtAuthGuard } from "../../../../modules/auth/guards";
 import { CreateAssessmentSubmissionDto, UpdateAssessmentSubmissionDto } from "../dtos";
-import { AssessmentSubmission } from "../entities";
+import { AssessmentSubmission } from "../entities/assessment-submissions.entity";
 import { AssessmentSubmissionService } from "../services";
 
 @Controller(Endpoint.ASSESSMENT_SUBMISSION)

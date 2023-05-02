@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityService, GetMany, IPaginatedResponse } from "src/core/entity";
 import { SocketService } from "src/modules/socket/services/socket.service";
-import { ClassRoom } from "../entities";
+import { ClassRoom } from "../entities/class-room.entity";
 import { ClassRoomRepository } from "../repositories";
 import { EntityManager, FindOneOptions } from "typeorm";
 import { EH } from "../../../../core/entity/entity.types";

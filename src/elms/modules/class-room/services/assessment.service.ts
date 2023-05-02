@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityService } from "src/core/entity";
 import { SocketService } from "src/modules/socket/services/socket.service";
-import { Assessment } from "../entities";
+import { Assessment } from "../entities/assessment.entity";
 import { AssessmentRepository } from "../repositories";
 
 @Injectable()

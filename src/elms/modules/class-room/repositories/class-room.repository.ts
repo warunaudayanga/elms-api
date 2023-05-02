@@ -1,7 +1,7 @@
 import { CustomRepository } from "../../../../modules/typeorm-ex/decorators";
 import { BaseRepository, relations } from "../../../../core/entity";
+import { ClassRoom } from "../entities/class-room.entity";
 import { IClassRoomRepository } from "../interfaces/repositories";
-import { ClassRoom } from "../entities";
 
 export const classRoomRelations = ["grade", "subject", "tutor", "schedule", "classStudents", "classStudents.payments"];
 export const classRoomRelationsAll = [

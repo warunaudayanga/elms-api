@@ -1,16 +1,16 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
-import { Endpoint } from "../../../../core/enums";
-import { JwtAuthGuard } from "../../../../modules/auth/guards";
 import { Pager, ReqUser, Roles, Sorter } from "../../../../core/decorators";
-import { IPaginatedResponse, IPagination, ISort, IStatusResponse } from "../../../../core/entity";
 import { BulkDeleteDto, UpdateStatusDto } from "../../../../core/dtos";
+import { IPaginatedResponse, IPagination, ISort, IStatusResponse } from "../../../../core/entity";
+import { Endpoint } from "../../../../core/enums";
 import { RoleGuard } from "../../../../core/guards/role.guard";
-import { Role } from "../../../../modules/auth/enums";
 import { User } from "../../../../modules/auth/entities";
-import { ClassSchedule } from "../entities";
-import { ScheduleService } from "../services";
-import { FilterClassRoomDto, CreateScheduleDto, UpdateScheduleDto } from "../dtos";
+import { Role } from "../../../../modules/auth/enums";
+import { JwtAuthGuard } from "../../../../modules/auth/guards";
+import { CreateScheduleDto, FilterClassRoomDto, UpdateScheduleDto } from "../dtos";
+import { ClassSchedule } from "../entities/schedule.entity";
 import { classScheduleRelations } from "../repositories";
+import { ScheduleService } from "../services";
 
 @Controller(Endpoint.CLASS_SCHEDULE)
 export class ClassScheduleController {

@@ -1,6 +1,6 @@
 import { CustomRepository } from "../../../../modules/typeorm-ex/decorators";
 import { BaseRepository } from "../../../../core/entity";
-import { Grade } from "../entities";
+import { Grade } from "../entities/grade.entity";
 import { IGradeRepository } from "../interfaces/repositories";
 
 @CustomRepository(Grade)

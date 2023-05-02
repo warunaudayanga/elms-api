@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityService } from "src/core/entity";
 import { SocketService } from "src/modules/socket/services/socket.service";
-import { ClassSchedule } from "../entities";
+import { ClassSchedule } from "../entities/schedule.entity";
 import { ClassScheduleRepository } from "../repositories";
 import { ZoomService } from "../../zoom/services/zoom.service";
 import { SetScheduleDto } from "../dtos";

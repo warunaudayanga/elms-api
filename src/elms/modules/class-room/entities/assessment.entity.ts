@@ -1,12 +1,24 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import {
+    AfterLoad,
+    Column,
+    CreateDateColumn,
+    DeleteDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
+} from "typeorm";
+import { Status } from "../../../../core/enums";
+import { User } from "../../../../modules/auth/entities";
 import { ClassRoom } from "./class-room.entity";
-import { BaseEntity } from "../../../../core/entity/base.entity";
 import { FKConstraint } from "../../../../core/enums/constraint.enum";
 import { Quiz, QuizAnswer } from "../interfaces/quiz.interfaces";
 import { AssessmentSubmission } from "./assessment-submissions.entity";
 
 @Entity({ name: "assessments" })
-export class Assessment extends BaseEntity {
+export class Assessment {
     @Column({ nullable: false })
     name: string;
 
@@ -39,4 +51,53 @@ export class Assessment extends BaseEntity {
     submissions?: AssessmentSubmission[];
 
     submission?: AssessmentSubmission;
+
+    @PrimaryGeneratedColumn()
+    id: number;
+
+    @Column({ type: "enum", enum: Status, default: Status.PENDING })
+    status: Status | string;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @ManyToOne(() => User)
+    createdBy?: User;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
+
+    @ManyToOne(() => User)
+    updatedBy?: User;
+
+    @DeleteDateColumn()
+    deletedAt?: Date;
+
+    @ManyToOne(() => User)
+    deletedBy?: User;
+
+    @AfterLoad()
+    afterLoad(): void {
+        this.createdBy = this.createdBy
+            ? ({
+                  id: this.createdBy.id,
+                  firstName: this.createdBy.firstName,
+                  lastName: this.createdBy.lastName,
+              } as User)
+            : null;
+        this.updatedBy = this.updatedBy
+            ? ({
+                  id: this.updatedBy.id,
+                  firstName: this.updatedBy.firstName,
+                  lastName: this.updatedBy.lastName,
+              } as User)
+            : null;
+        this.deletedBy = this.deletedBy
+            ? ({
+                  id: this.deletedBy.id,
+                  firstName: this.deletedBy.firstName,
+                  lastName: this.deletedBy.lastName,
+              } as User)
+            : null;
+    }
 }

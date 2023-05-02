@@ -1,6 +1,6 @@
 import { CustomRepository } from "../../../../modules/typeorm-ex/decorators";
 import { BaseRepository } from "../../../../core/entity";
-import { ChatRoom } from "../entities";
+import { ChatRoom } from "../entities/chat-room.entity";
 import { IChatRoomRepository } from "../interfaces/repositories/chat-room.repository.interface";
 
 @CustomRepository(ChatRoom)

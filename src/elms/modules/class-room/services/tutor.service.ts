@@ -1,7 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { Assessment } from "../entities/assessment.entity";
+import { ClassRoom } from "../entities/class-room.entity";
+import { ClassSchedule } from "../entities/schedule.entity";
 import { classRoomRelations, classRoomRelationsAll, ClassStudentsRepository } from "../repositories";
-import { Assessment, ClassRoom, ClassSchedule } from "../entities";
 import { IPaginatedResponse, IPagination, ISort } from "../../../../core/entity";
 import {
     FilterClassRoomDto,

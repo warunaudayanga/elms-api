@@ -14,15 +14,13 @@ import {
 } from "typeorm";
 import { Exclude } from "class-transformer";
 import { Status } from "../../../core/enums";
+import { Area } from "../../../elms/modules/class-room/entities/area.entity";
+import { AssessmentSubmission } from "../../../elms/modules/class-room/entities/assessment-submissions.entity";
+import { ClassRoom } from "../../../elms/modules/class-room/entities/class-room.entity";
+import { ClassStudent } from "../../../elms/modules/class-room/entities/class-students.entity";
+import { MessageUserStatus } from "../../../elms/modules/class-room/entities/message-user-status.entity";
+import { Tutor } from "../../../elms/modules/class-room/entities/tutor.entity";
 import { GuardianRelationship } from "../../../elms/modules/class-room/enums";
-import {
-    ClassRoom,
-    ClassStudent,
-    Tutor,
-    Area,
-    MessageUserStatus,
-    AssessmentSubmission,
-} from "../../../elms/modules/class-room/entities";
 import { Role } from "../enums";
 import { FKConstraint, UNIQUEConstraint } from "../../../core/enums/constraint.enum";
 

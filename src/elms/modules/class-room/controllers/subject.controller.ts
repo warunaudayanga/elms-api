@@ -1,15 +1,15 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from "@nestjs/common";
-import { Endpoint } from "../../../../core/enums";
-import { JwtAuthGuard } from "../../../../modules/auth/guards";
 import { ReqUser, Roles } from "../../../../core/decorators";
-import { IStatusResponse } from "../../../../core/entity";
 import { BulkDeleteDto, UpdateStatusDto } from "../../../../core/dtos";
+import { IStatusResponse } from "../../../../core/entity";
+import { Endpoint } from "../../../../core/enums";
 import { RoleGuard } from "../../../../core/guards/role.guard";
-import { Role } from "../../../../modules/auth/enums";
 import { User } from "../../../../modules/auth/entities";
-import { ClassSubject } from "../entities";
-import { ClassSubjectService } from "../services";
+import { Role } from "../../../../modules/auth/enums";
+import { JwtAuthGuard } from "../../../../modules/auth/guards";
 import { CreateSubjectDto, UpdateSubjectDto } from "../dtos";
+import { ClassSubject } from "../entities/subject.entity";
+import { ClassSubjectService } from "../services";
 
 @Controller(Endpoint.SUBJECT)
 export class ClassSubjectController {

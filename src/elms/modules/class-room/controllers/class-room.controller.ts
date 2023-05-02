@@ -19,7 +19,7 @@ import { BulkDeleteDto, UpdateStatusDto } from "../../../../core/dtos";
 import { RoleGuard } from "../../../../core/guards/role.guard";
 import { Role } from "../../../../modules/auth/enums";
 import { User } from "../../../../modules/auth/entities";
-import { ClassRoom } from "../entities";
+import { ClassRoom } from "../entities/class-room.entity";
 import { ClassRoomService } from "../services";
 import { CreateClassRoomDto, UpdateClassRoomDto, FilterClassRoomDto } from "../dtos";
 import { classRoomRelationsAll } from "../repositories";

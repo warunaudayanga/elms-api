@@ -12,22 +12,20 @@ import {
     TutorController,
 } from "./controllers";
 import { AssessmentSubmissionController } from "./controllers/assessment-submission.controller";
-import {
-    Area,
-    Assessment,
-    AssessmentSubmission,
-    ChatRoom,
-    ClassRoom,
-    ClassSchedule,
-    ClassScheduleHistory,
-    ClassStudent,
-    ClassSubject,
-    Grade,
-    Message,
-    MessageUserStatus,
-    Payment,
-    Tutor,
-} from "./entities";
+import { Area } from "./entities/area.entity";
+import { AssessmentSubmission } from "./entities/assessment-submissions.entity";
+import { Assessment } from "./entities/assessment.entity";
+import { ChatRoom } from "./entities/chat-room.entity";
+import { ClassRoom } from "./entities/class-room.entity";
+import { ClassStudent } from "./entities/class-students.entity";
+import { Grade } from "./entities/grade.entity";
+import { MessageUserStatus } from "./entities/message-user-status.entity";
+import { Message } from "./entities/message.entity";
+import { Payment } from "./entities/payment.entity";
+import { ClassScheduleHistory } from "./entities/schedule-history.entity";
+import { ClassSchedule } from "./entities/schedule.entity";
+import { ClassSubject } from "./entities/subject.entity";
+import { Tutor } from "./entities/tutor.entity";
 import {
     AreaRepository,
     AssessmentRepository,

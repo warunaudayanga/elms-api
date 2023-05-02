@@ -7,7 +7,7 @@ import { BulkDeleteDto, UpdateStatusDto } from "../../../../core/dtos";
 import { RoleGuard } from "../../../../core/guards/role.guard";
 import { Role } from "../../../../modules/auth/enums";
 import { User } from "../../../../modules/auth/entities";
-import { Assessment } from "../entities";
+import { Assessment } from "../entities/assessment.entity";
 import { AssessmentService } from "../services";
 import { CreateAssessmentDto, UpdateAssessmentDto } from "../dtos";
 
