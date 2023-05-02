@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query,
 import { Pager, ReqUser, Roles, Sorter } from "../../../../core/decorators";
 import { BulkDeleteDto, UpdateStatusDto } from "../../../../core/dtos";
 import { IPaginatedResponse, IPagination, ISort, IStatusResponse } from "../../../../core/entity";
-import { Endpoint } from "../../../../core/enums";
+import { Endpoint, Status } from "../../../../core/enums";
 import { RoleGuard } from "../../../../core/guards/role.guard";
 import { User } from "../../../../modules/auth/entities";
 import { Role } from "../../../../modules/auth/enums";
@@ -19,7 +19,7 @@ export class GradeController {
     @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     @Post()
     create(@ReqUser() createdBy: User, @Body() createGradeDto: CreateGradeDto): Promise<Grade> {
-        return this.gradeService.save({ ...createGradeDto, createdBy });
+        return this.gradeService.save({ ...createGradeDto, status: Status.ACTIVE, createdBy });
     }
 
     @UseGuards(JwtAuthGuard, RoleGuard)

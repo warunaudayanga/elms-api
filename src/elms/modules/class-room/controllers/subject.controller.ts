@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGua
 import { ReqUser, Roles } from "../../../../core/decorators";
 import { BulkDeleteDto, UpdateStatusDto } from "../../../../core/dtos";
 import { IStatusResponse } from "../../../../core/entity";
-import { Endpoint } from "../../../../core/enums";
+import { Endpoint, Status } from "../../../../core/enums";
 import { RoleGuard } from "../../../../core/guards/role.guard";
 import { User } from "../../../../modules/auth/entities";
 import { Role } from "../../../../modules/auth/enums";
@@ -19,7 +19,7 @@ export class ClassSubjectController {
     @Roles(Role.SUPER_ADMIN, Role.ADMIN)
     @Post()
     create(@ReqUser() createdBy: User, @Body() createClassSubjectDto: CreateSubjectDto): Promise<ClassSubject> {
-        return this.classSubjectService.save({ ...createClassSubjectDto, createdBy });
+        return this.classSubjectService.save({ ...createClassSubjectDto, status: Status.ACTIVE, createdBy });
     }
 
     @UseGuards(JwtAuthGuard, RoleGuard)
