@@ -71,8 +71,10 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          # noinspection YAMLUnusedAnchor
-          command: [ -f ~/env/dev/elms/elms.env ] && cp ~/env/dev/elms/elms.env ~/env/dev/elms/elms-api/.env
+          run: |
+            if [ -f ~/env/dev/elms/elms.env ]; then
+              cp ~/env/dev/elms/elms.env ~/env/dev/elms/elms-api/.env
+            fi
 
 #      - name: Run Migrations
 #        uses: garygrossgarten/github-action-ssh@release
