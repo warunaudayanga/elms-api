@@ -21,6 +21,22 @@ jobs:
       - run: npm install --legacy-peer-deps
       - run: npm run build --if-present
 
+      - name: Delete old directory
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          command: rm -rf ~/env/dev/elms/elms-api
+
+      - name: Create directory
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          command: mkdir -p ~/env/dev/elms/elms-api
+
       - name: Copy API dependencies to development environment
         uses: appleboy/scp-action@master
         with:
@@ -49,13 +65,14 @@ jobs:
           source: migrations/*
           target: ~/env/dev/elms/elms-api
 
-      - name: Copy.env
+      - name: Copy .env if exists
         uses: garygrossgarten/github-action-ssh@release
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          command: cp ~/env/dev/elms/elms.env ~/env/dev/elms/elms-api/.env
+          # noinspection YAMLUnusedAnchor
+          command: [ -f ~/env/dev/elms/elms.env ] && cp ~/env/dev/elms/elms.env ~/env/dev/elms/elms-api/.env
 
 #      - name: Run Migrations
 #        uses: garygrossgarten/github-action-ssh@release
