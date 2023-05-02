@@ -71,10 +71,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          command: |
-            if [ -f ~/env/dev/elms/elms.env ]; then
-              cp ~/env/dev/elms/elms.env ~/env/dev/elms/elms-api/.env
-            fi
+          command: cp ~/env/dev/elms/elms.env ~/env/dev/elms/elms-api/.env
 
       - name: Run Migrations
         uses: garygrossgarten/github-action-ssh@release
