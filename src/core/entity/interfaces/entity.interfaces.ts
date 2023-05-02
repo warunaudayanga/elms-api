@@ -2,7 +2,7 @@
 import { Status } from "../../enums";
 import { FindManyOptions, FindOneOptions, FindOptionsWhere, ObjectID } from "typeorm";
 import { FindOptionsOrder } from "typeorm/find-options/FindOptionsOrder";
-import { User } from "../../../modules/auth/entities/user.entity";
+import { User } from "../../../modules/auth/entities";
 
 export type FindConditions<Entity> =
     | string
@@ -63,13 +63,14 @@ export interface GetOne<Entity> extends Get<Entity> {
 }
 
 export interface GetAll<Entity> {
-    relations?: FindOneOptions<Entity>["relations"];
     pagination?: IPagination;
     sort?: ISort<Entity>;
+    relations?: FindManyOptions<Entity>["relations"];
     options?: FindManyOptions<Entity>;
 }
 
 export interface GetMany<Entity> extends GetAll<Entity> {
+    filters?: FindManyOptions<Entity>["where"];
     where?: FindOneOptions<Entity>["where"];
     not?: FindOneOptions<Entity>["where"];
     search?: FindOneOptions<Entity>["where"];

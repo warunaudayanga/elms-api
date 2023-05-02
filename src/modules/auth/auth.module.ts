@@ -1,18 +1,17 @@
 import { Global, Module } from "@nestjs/common";
-import { AuthController } from "./controllers";
-import { AuthService, UserService, RoleService } from "./services";
+import { AuthController, UserController } from "./controllers";
+import { AuthService, UserService } from "./services";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { TypeOrmExModule } from "../typeorm-ex/typeorm-ex.module";
-import { RoleRepository, UserRepository } from "./repositories";
-import { User } from "./entities/user.entity";
-import { Role } from "./entities/role.entity";
-import { UserController } from "./controllers/user.controller";
-import { RoleController } from "./controllers/role.controller";
+import { UserRepository } from "./repositories";
+import { User } from "./entities";
 import { LocalStrategy, JwtStrategy } from "./strategies";
 import { RedisCacheModule } from "../cache/redis-cache.module";
 import configuration from "../../core/config/configuration";
 import { FileUploadModule } from "../file-upload/file-upload.module";
+import { Tutor } from "../../elms/modules/class-room/entities";
+import { TutorRepository } from "../../elms/modules/class-room/repositories";
 
 @Global()
 @Module({
@@ -21,12 +20,12 @@ import { FileUploadModule } from "../file-upload/file-upload.module";
             secret: configuration().jwt.secret,
         }),
         PassportModule,
-        TypeOrmExModule.forCustomRepository([User, Role, UserRepository, RoleRepository]),
+        TypeOrmExModule.forCustomRepository([User, UserRepository, Tutor, TutorRepository]),
         RedisCacheModule,
         FileUploadModule,
     ],
-    controllers: [AuthController, UserController, RoleController],
-    providers: [LocalStrategy, JwtStrategy, AuthService, UserService, RoleService],
+    controllers: [AuthController, UserController],
+    providers: [LocalStrategy, JwtStrategy, AuthService, UserService],
     exports: [JwtStrategy, AuthService],
 })
 export class AuthModule {}

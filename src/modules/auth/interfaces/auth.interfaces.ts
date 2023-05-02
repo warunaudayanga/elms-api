@@ -3,7 +3,6 @@ import { User } from "src/modules/auth/entities/user.entity";
 export interface ITokenData {
     sub: number;
     email: string;
-    profileId: number;
 }
 
 export interface ITokens {

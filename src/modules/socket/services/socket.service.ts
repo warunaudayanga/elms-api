@@ -5,18 +5,17 @@ import { Injectable } from "@nestjs/common";
 import { Socket } from "socket.io";
 import { LoggerService } from "../../../core/services";
 import { SocketEvent } from "../enums";
-import { DefaultRoles } from "src/modules/auth/enums/default-roles.enum";
-import { Events } from "../../webhook/enums";
+import { Role } from "src/modules/auth/enums/role.enum";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Observable, Subject } from "rxjs";
 import { WSMessage } from "../interfaces";
-import { User } from "../../auth/entities/user.entity";
-
-export interface SocketUser {
-    id: number;
-    role: DefaultRoles | string;
-    socket: Socket;
-}
+import { User } from "../../auth/entities";
+import { ACCESS_TOKEN_COOKIE_NAME } from "../../auth/services";
+import { parse } from "cookie";
+import * as cookieParser from "cookie-parser";
+import configuration from "../../../core/config/configuration";
+import { AppEvent } from "../../../core/enums/app-event.enum";
+import { SocketUser } from "../interfaces/socket.interfaces";
 
 @Injectable()
 export class SocketService {
@@ -35,15 +34,28 @@ export class SocketService {
     }
 
     async getUserBySocket(socket: Socket): Promise<User> {
-        const bearerToken = socket.handshake.auth?.token || socket.handshake.headers.authorization;
-        if (!bearerToken) {
-            return null;
+        const cookieHeader = socket.handshake.headers.cookie || "";
+
+        const parsedCookies = parse(cookieHeader);
+        const signedAuthCookie = parsedCookies[ACCESS_TOKEN_COOKIE_NAME];
+
+        if (signedAuthCookie) {
+            const token = cookieParser.signedCookie(signedAuthCookie, configuration().cookies.secret);
+            if (token) {
+                return await this.getUserByToken(token);
+            }
         }
-        return await this.getUserByToken(bearerToken);
+
+        const token = socket.handshake.headers.authorization;
+        if (token) {
+            return await this.getUserByToken(token);
+        }
+
+        return null;
     }
 
     async getUserByToken(bearerToken): Promise<User> {
-        const [user] = (await this.eventEmitter.emitAsync(Events.USER_GET_BY_TOKEN, bearerToken)) as [User];
+        const [user] = (await this.eventEmitter.emitAsync(AppEvent.USER_GET_BY_TOKEN, bearerToken)) as [User];
         return user;
     }
 
@@ -55,9 +67,9 @@ export class SocketService {
             }
             const user = this.users.find((c) => c.id === id);
             if (user) {
-                this.users[this.users.indexOf(user)] = { socket, id, role: role.name };
+                this.users[this.users.indexOf(user)] = { socket, id, role };
             } else {
-                this.users.push({ socket, id, role: role.name });
+                this.users.push({ socket, id, role });
             }
             console.log(`User connected: { socketId: ${socket.id}, userId: ${id} }`); // eslint-disable-line no-console
             console.log(`Users: ${this.users.length}`); // eslint-disable-line no-console
@@ -83,11 +95,11 @@ export class SocketService {
     }
 
     emit<T>(event: SocketEvent | string, data: T): void;
-    emit<T>(event: SocketEvent | string, role: DefaultRoles | string, data: T): void;
-    emit<T>(event: SocketEvent | string, dataOrRole: T | DefaultRoles, data?: T): void {
+    emit<T>(event: SocketEvent | string, role: Role | string, data: T): void;
+    emit<T>(event: SocketEvent | string, dataOrRole: T | Role, data?: T): void {
         try {
             const dt: T = data ?? (dataOrRole as T);
-            const role: DefaultRoles | undefined = data ? (dataOrRole as DefaultRoles) : undefined;
+            const role: Role | undefined = data ? (dataOrRole as Role) : undefined;
             const users = role ? this.users.filter((c) => c.role === dataOrRole) : this.users;
             users.forEach((c) => {
                 c.socket.emit(event, dt);
@@ -99,5 +111,19 @@ export class SocketService {
 
     emitUser<T>(event: SocketEvent | string, userId: number, data: T): void {
         this.users.find((c) => c.id === userId)?.socket.emit(event, data);
+    }
+
+    emitUsers<T>(event: SocketEvent | string, userIds: number[], data: T): void {
+        this.users.filter((c) => userIds.includes(c.id))?.forEach((c) => c.socket.emit(event, data));
+    }
+
+    sendMessage<T = any>(event: AppEvent, data: T, self: number): void;
+    sendMessage<T = any>(event: AppEvent, data: T, userIds: number[]): void;
+    sendMessage<T = any>(event: AppEvent, data: T, selfOrIds?: number | number[]): void {
+        this.users
+            .filter((u) => (Array.isArray(selfOrIds) ? selfOrIds.includes(u.id) : selfOrIds !== u.id))
+            .forEach((c) => {
+                c.socket.emit(SocketEvent.MESSAGE, { event, data } as WSMessage<T>);
+            });
     }
 }

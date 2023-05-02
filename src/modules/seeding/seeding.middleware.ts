@@ -3,10 +3,11 @@ import { NextFunction, Request, Response } from "express";
 import { EntityManager } from "typeorm";
 import { AuthService } from "../auth/services";
 import { DeepPartial } from "typeorm/common/DeepPartial";
-import { User } from "../auth/entities/user.entity";
-import { Role } from "../auth/entities/role.entity";
-import { Permission, Status } from "../../core/enums";
-import { DefaultRoles } from "../auth/enums";
+import { User } from "../auth/entities";
+import { Status } from "../../core/enums";
+import { Role } from "../auth/enums";
+import { Area } from "../../elms/modules/class-room/entities";
+import { District } from "../../elms/modules/class-room/enums";
 
 @Injectable()
 export class SeedingMiddleware implements NestMiddleware {
@@ -27,39 +28,25 @@ export class SeedingMiddleware implements NestMiddleware {
             return next();
         }
 
-        const rolesDto: DeepPartial<Role>[] = [
-            {
-                name: DefaultRoles.SUPER_ADMIN,
-                permissions: Object.values(Permission),
-                priority: 1,
-                status: Status.ACTIVE,
-            },
-            {
-                name: DefaultRoles.ADMIN,
-                permissions: Object.values(Permission),
-                priority: 2,
-                status: Status.ACTIVE,
-            },
-            {
-                name: DefaultRoles.USER,
-                permissions: [],
-                priority: 3,
-                status: Status.ACTIVE,
-            },
-        ];
-
         const authData = AuthService.generatePassword("admin@123");
 
-        const admin: DeepPartial<User> = {
+        const admin: Partial<User> = {
             username: "admin",
             salt: authData.salt,
             password: authData.password,
             status: Status.ACTIVE,
-            profile: {
-                firstName: "Super",
-                lastName: "Admin",
-            },
+            role: Role.SUPER_ADMIN,
+            firstName: "Super",
+            lastName: "Admin",
+            email: "",
+            phone: "",
+            address: "",
         };
+
+        const areas: DeepPartial<Area>[] = Object.values(District).map((district) => ({
+            name: district,
+            status: Status.ACTIVE,
+        }));
 
         this.isSeedingComplete = (async (): Promise<boolean> => {
             // for example, you start with an initial seeding entry called 'initial-seeding'
@@ -67,10 +54,15 @@ export class SeedingMiddleware implements NestMiddleware {
             // part is skipped
             if (!(await this.entityManager.findOne(User, { where: { username: "admin" } }))) {
                 await this.entityManager.transaction(async (transactionalEntityManager) => {
-                    const roles: Role[] = await transactionalEntityManager.save(Role, rolesDto);
-                    await transactionalEntityManager.save(User, { ...admin, role: roles[0] });
+                    await transactionalEntityManager.save(User, admin);
                     // persist in db that 'initial-seeding' is complete
                     // await transactionalEntityManager.save(new Auth());
+                });
+            }
+
+            if (!(await this.entityManager.count(Area))) {
+                await this.entityManager.transaction(async (transactionalEntityManager) => {
+                    await transactionalEntityManager.save(Area, areas);
                 });
             }
 

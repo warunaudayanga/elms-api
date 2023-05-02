@@ -1,7 +1,7 @@
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 import { IPagination } from "../entity";
 
-export const Pager = createParamDecorator((data: any, ctx: ExecutionContext): IPagination => {
+export const Pager = createParamDecorator((data: any, ctx: ExecutionContext): IPagination | undefined => {
     const req = ctx.switchToHttp().getRequest();
     if (req.query?.page && req.query?.limit) {
         const p = Number(req.query.page);
@@ -10,5 +10,5 @@ export const Pager = createParamDecorator((data: any, ctx: ExecutionContext): IP
         const take: number = t ? t : 10;
         return { take, skip: (page - 1) * take };
     }
-    return {};
+    return undefined;
 });

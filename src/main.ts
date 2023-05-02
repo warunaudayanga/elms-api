@@ -13,10 +13,11 @@ import { AuthErrors } from "./modules/auth/responses";
 async function bootstrap(): Promise<void> {
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
         logger: new LoggerService(),
+        bodyParser: false,
     });
     const { httpAdapter } = app.get(HttpAdapterHost);
     app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
-    app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
     app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
     app.setGlobalPrefix("api");
     app.use(cookieParser(configuration().cookies.secret));

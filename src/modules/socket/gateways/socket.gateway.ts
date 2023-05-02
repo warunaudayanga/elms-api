@@ -12,17 +12,16 @@ import {
     WsException,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
-import { UseFilters, UseGuards } from "@nestjs/common";
-import { JwtAuthGuard } from "../../auth/guards";
+import { UseFilters } from "@nestjs/common";
 import { SocketService } from "../services";
 import { Gateway } from "../../../core/enums/gateways.enum";
 import { SocketEvent } from "../enums";
-import { AuthErrors } from "../../auth/responses";
 import { WSExceptionFilter } from "../filters";
 import { LoggerService } from "../../../core/services";
-import { WSMessage } from "../interfaces";
+import { WSMessage, WSMessageResponse } from "../interfaces";
 import { CommonErrors } from "../../../core/responses";
-import { User } from "../../auth/entities/user.entity";
+import { AuthErrors } from "../../auth/responses";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 @UseFilters(new WSExceptionFilter())
 @WebSocketGateway({ namespace: Gateway.SOCKET })
@@ -30,14 +29,13 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     @WebSocketServer()
     private server: Server;
 
-    constructor(private readonly socketService: SocketService) {}
+    constructor(private readonly socketService: SocketService, private readonly eventEmitter: EventEmitter2) {}
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     afterInit(server: Server): void {
         console.log("Server Initialized"); // eslint-disable-line no-console
     }
 
-    @UseGuards(JwtAuthGuard)
     async handleConnection(socket: Socket): Promise<any> {
         if (!(await this.socketService.addUser(socket))) {
             socket.emit(SocketEvent.ERROR, AuthErrors.AUTH_401_NOT_LOGGED_IN);
@@ -54,11 +52,19 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         try {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { password, salt, ...user } = await this.socketService.getUserBySocket(socket);
-            message.user = <User>user;
-            this.socketService.pushMessage(message);
+            let [data] = await this.eventEmitter.emitAsync(message.event, user, message.data, message.rid);
+            socket.emit(SocketEvent.MESSAGE, {
+                rid: message.rid,
+                event: message.event,
+                data,
+            } as WSMessageResponse);
         } catch (err: any) {
             LoggerService.error(err);
-            throw new WsException(CommonErrors.ERROR);
+            throw new WsException({
+                rid: message.rid,
+                event: message.event,
+                response: err.response || CommonErrors.ERROR,
+            });
         }
     }
 }

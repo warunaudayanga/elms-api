@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -8,7 +8,20 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { MysqlConnectionOptions } from "typeorm/driver/mysql/MysqlConnectionOptions";
 import { AuthModule, CommonModule, SeedingModule, SocketModule, WebhookModule } from "./modules";
-import { ProfileModule } from "./elms/modules/profile/profile.module";
+import { ClassRoomModule } from "./elms/modules/class-room/class-room.module";
+import { ZoomModule } from "./elms/modules/zoom/zoom.module";
+import { StripeModule } from "nestjs-stripe";
+import { CustomStripeModule } from "./elms/modules/stripe/stripe.module";
+import { RouteInfo } from "@nestjs/common/interfaces";
+import { RawBodyMiddleware } from "./core/middlewares/row-body-parser.middleware";
+import { JsonBodyMiddleware } from "./core/middlewares/json-body-parser.middleware";
+
+const rawBodyRoutes: Array<RouteInfo> = [
+    {
+        path: "*stripe/webhook",
+        method: RequestMethod.POST,
+    },
+];
 
 @Module({
     imports: [
@@ -33,13 +46,25 @@ import { ProfileModule } from "./elms/modules/profile/profile.module";
             keepConnectionAlive: true,
             autoLoadEntities: true,
         }),
+        StripeModule.forRoot({ apiKey: configuration().stripe.apiKey, apiVersion: "2022-11-15" }),
+        CustomStripeModule,
         SocketModule,
         WebhookModule,
         SeedingModule,
         AuthModule,
-        ProfileModule,
+        ZoomModule,
+        ClassRoomModule,
     ],
     controllers: [AppController],
     providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+    configure(consumer: MiddlewareConsumer): MiddlewareConsumer | void {
+        consumer
+            .apply(RawBodyMiddleware)
+            .forRoutes(...rawBodyRoutes)
+            .apply(JsonBodyMiddleware)
+            .exclude(...rawBodyRoutes)
+            .forRoutes("*");
+    }
+}

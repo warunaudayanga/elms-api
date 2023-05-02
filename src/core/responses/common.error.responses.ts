@@ -37,7 +37,7 @@ const CommonErrors = {
     ERROR: {
         status: 500,
         code: "ERROR_500",
-        message: "Unspecific error!",
+        message: "Internal Server Error!",
     },
 };
 

@@ -6,7 +6,7 @@ import configuration from "src/core/config/configuration";
 import { Endpoint } from "src/core/enums";
 import { CommonErrors } from "src/core/responses";
 import { EventEmitter2 } from "@nestjs/event-emitter";
-import { Events } from "src/modules/webhook/enums/events.enum";
+import { WebhookEvent } from "src/modules/webhook/enums/webhook-event.enum";
 
 @Controller(Endpoint.COMMON)
 export class CommonController {
@@ -38,6 +38,6 @@ export class CommonController {
                 name: "Software Technology",
             },
         };
-        this.eventEmitter.emit(Events.USER_REGISTERED, user);
+        this.eventEmitter.emit(WebhookEvent.USER_REGISTERED, user);
     }
 }

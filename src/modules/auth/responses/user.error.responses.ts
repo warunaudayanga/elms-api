@@ -39,10 +39,55 @@ const UserErrors = {
         code: "USER_400_EMPTY_STATUS",
         message: "User status cannot be empty!",
     },
+    USER_400_EMPTY_EMAIL: {
+        status: 400,
+        code: "USER_400_EMPTY_EMAIL",
+        message: "User email cannot be empty!",
+    },
+    USER_400_EMPTY_DOB: {
+        status: 400,
+        code: "USER_400_EMPTY_DOB",
+        message: "User dob cannot be empty!",
+    },
+    USER_400_EMPTY_PHONE: {
+        status: 400,
+        code: "USER_400_EMPTY_PHONE",
+        message: "User phone cannot be empty!",
+    },
+    USER_400_EMPTY_AREA_ID: {
+        status: 400,
+        code: "USER_400_EMPTY_AREA_ID",
+        message: "User area id cannot be empty!",
+    },
+    USER_400_EMPTY_ADDRESS: {
+        status: 400,
+        code: "USER_400_EMPTY_ADDRESS",
+        message: "User address cannot be empty!",
+    },
+    USER_400_EMPTY_GUARDIAN_NAME: {
+        status: 400,
+        code: "USER_400_EMPTY_GUARDIAN_NAME",
+        message: "User guardian name cannot be empty!",
+    },
+    USER_400_EMPTY_GUARDIAN_PHONE: {
+        status: 400,
+        code: "USER_400_EMPTY_GUARDIAN_PHONE",
+        message: "User guardian phone cannot be empty!",
+    },
+    USER_400_EMPTY_GUARDIAN_RELATIONSHIP: {
+        status: 400,
+        code: "USER_400_EMPTY_GUARDIAN_RELATIONSHIP",
+        message: "User guardian relationship cannot be empty!",
+    },
     USER_400_NOT_EMPTY_ROLE: {
         status: 400,
         code: "USER_400_NOT_EMPTY_ROLE",
         message: "User role cannot be inserted!",
+    },
+    USER_400_NOT_EMPTY_TUTOR_ID: {
+        status: 400,
+        code: "USER_400_NOT_EMPTY_TUTOR_ID",
+        message: "User tutor id cannot be inserted!",
     },
     USER_400_INVALID_IDS: {
         status: 400,
@@ -69,10 +114,10 @@ const UserErrors = {
         code: "USER_400_INVALID_ROLE",
         message: "Invalid value for user role!",
     },
-    USER_400_INVALID_PROFILE_IMAGE: {
+    USER_400_INVALID_AREA_ID: {
         status: 400,
-        code: "USER_400_INVALID_PROFILE_IMAGE",
-        message: "Invalid value for user profile image, must be a url!",
+        code: "USER_400_INVALID_AREA_ID",
+        message: "Invalid value for user area id!",
     },
     USER_400_INVALID_DOB: {
         status: 400,
@@ -88,6 +133,11 @@ const UserErrors = {
         status: 409,
         code: "USER_409_EXIST_USERNAME",
         message: "User with given username exist!",
+    },
+    USER_400_INVALID_GUARDIAN_RELATIONSHIP: {
+        status: 400,
+        code: "USER_400_INVALID_GUARDIAN_RELATIONSHIP",
+        message: "Invalid value for user guardian relationship!",
     },
 };
 

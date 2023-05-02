@@ -12,6 +12,11 @@ const EntityErrors = {
         code: `${entityName.toUpperCase()}_404_ID`,
         message: `Cannot find a ${entityName.toLowerCase()} with given id!`,
     }),
+    E_404_RELATION: (entityName: string, relationName: string): EntityErrorResponse => ({
+        status: 404,
+        code: `${entityName.toUpperCase()}_404_${relationName.toUpperCase()}_ID`,
+        message: `Cannot find a ${relationName.toLowerCase()} with given id!`,
+    }),
     E_404_CONDITION: (entityName: string): EntityErrorResponse => ({
         status: 404,
         code: `${entityName.toUpperCase()}_404_CONDITION`,
