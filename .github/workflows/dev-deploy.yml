@@ -82,7 +82,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          command: cd ~/env/dev/elms/elms-api && sudo ts-node ./node_modules/typeorm/cli.js -f ./dist/core/config/ormconfig-migrations.js migration:run
+          command: cd ~/env/dev/elms/elms-api && sudo ts-node ./node_modules/typeorm/cli.js -d ./dist/core/config/ormconfig-migrations.js migration:run
 
       - name: Restart Application
         uses: garygrossgarten/github-action-ssh@release
