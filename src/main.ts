@@ -19,7 +19,7 @@ async function bootstrap(): Promise<void> {
     app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
     app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
     app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
-    app.setGlobalPrefix("api");
+    // app.setGlobalPrefix("api");
     app.use(cookieParser(configuration().cookies.secret));
     app.use(helmet());
     app.enableCors({
