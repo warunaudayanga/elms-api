@@ -71,7 +71,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          run: |
+          command: |
             if [ -f ~/env/dev/elms/elms.env ]; then
               cp ~/env/dev/elms/elms.env ~/env/dev/elms/elms-api/.env
             fi
