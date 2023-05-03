@@ -6,13 +6,15 @@ import { CreateUserDto } from "src/modules/auth/dtos";
 import { Endpoint } from "src/core/enums";
 import { JwtAuthGuard } from "src/core/guards";
 import { ReqUser } from "src/core/decorators";
-import { AuthDataDto, UpdatePasswordDto } from "../dtos";
+import { AuthDto, UpdatePasswordDto } from "../dtos";
 import { IStatusResponse } from "src/core/entity";
 import { LocalAuthGuard } from "../guards";
 import { RedisCacheService } from "../../cache/services/redis-cache.service";
 import configuration from "../../../core/config/configuration";
 import { SuccessResponse } from "../../../core/responses";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { VerificationDto } from "../dtos/verification.dto";
+import { ResendVerificationDto } from "../dtos/resend-verification.dto";
 
 @Controller(Endpoint.AUTH)
 export class AuthController {
@@ -28,7 +30,7 @@ export class AuthController {
     @UseGuards(LocalAuthGuard)
     async authenticate(
         @ReqUser() user: User,
-        @Body() authDataDto: AuthDataDto,
+        @Body() authDataDto: AuthDto,
         @Res({ passthrough: true }) response: Response,
     ): Promise<User> {
         const tokenResponse = await this.authService.generateTokens(user);
@@ -46,6 +48,16 @@ export class AuthController {
             signed: true,
         });
         return user;
+    }
+
+    @Post("verify-account")
+    verifyAccount(@Body() verificationDto: VerificationDto): Promise<SuccessResponse> {
+        return this.authService.verifyAccount(verificationDto.token);
+    }
+
+    @Post("resend-verification")
+    resendVerification(@Body() verificationDto: ResendVerificationDto): Promise<SuccessResponse> {
+        return this.authService.resendVerification(verificationDto.email);
     }
 
     @UseGuards(JwtAuthGuard)

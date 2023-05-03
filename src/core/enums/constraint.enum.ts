@@ -12,6 +12,7 @@ export enum FKConstraint {
     SCHEDULE_HISTORY_SCHEDULE = "FK_scheduleHistory_schedule",
     ASSESSMENT_SUBMISSION_ASSESSMENT = "FK_assessmentSubmission_assessment",
     ASSESSMENT_SUBMISSION_USER = "FK_assessmentSubmission_user",
+    VERIFICATION_USER = "FK_verification_user",
 }
 
 export enum UNIQUEConstraint {

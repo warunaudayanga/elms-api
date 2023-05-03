@@ -26,6 +26,7 @@
     "migration-revert": "npm run typeorm:cli migration:revert"
   },
   "dependencies": {
+    "@nestjs-modules/mailer": "^1.8.1",
     "@nestjs/axios": "^2.0.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
@@ -45,6 +46,7 @@
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.3",
+    "handlebars": "^4.7.7",
     "helmet": "^6.0.1",
     "jsrsasign": "^10.8.0",
     "moment": "^2.29.4",

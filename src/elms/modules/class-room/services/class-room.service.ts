@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { EntityService, GetMany, IPaginatedResponse } from "src/core/entity";
 import { SocketService } from "src/modules/socket/services/socket.service";
 import { ClassRoom } from "../entities/class-room.entity";
-import { ClassRoomRepository } from "../repositories";
+import { classRoomRelations, ClassRoomRepository } from "../repositories";
 import { EntityManager, FindOneOptions } from "typeorm";
 import { EH } from "../../../../core/entity/entity.types";
 import { ZoomService } from "../../zoom/services/zoom.service";
@@ -30,7 +30,7 @@ export class ClassRoomService extends EntityService<ClassRoom> {
             const classRoom = await this.classRoomRepository.saveAndGet(createClassRoomDto, options, manager);
             await this.chatRoomService.save(
                 { name: classRoom.name, classRoom, users: [{ id: classRoom.tutorId }] },
-                undefined,
+                { relations: classRoomRelations },
                 manager,
             );
             return classRoom;

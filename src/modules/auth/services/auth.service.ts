@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ConflictException,
     ForbiddenException,
     Injectable,
@@ -26,6 +27,10 @@ import { TutorRepository } from "../../../elms/modules/class-room/repositories";
 import { userRelations } from "../repositories";
 import { AppEvent } from "../../../core/enums/app-event.enum";
 import { EntityManager } from "typeorm";
+import { VerificationService } from "./verification.service";
+import { EmailService } from "../../common/services";
+import { SuccessResponse } from "../../../core/responses";
+import { VerificationType } from "../enums/verification-type.enum";
 
 export const ACCESS_TOKEN_COOKIE_NAME = "Authorization";
 export const REFRESH_TOKEN_COOKIE_NAME = "Refresh";
@@ -34,12 +39,16 @@ export const REFRESH_TOKEN_COOKIE_NAME = "Refresh";
 export class AuthService {
     constructor(
         private readonly userService: UserService,
+        private readonly verificationService: VerificationService,
         private readonly cacheService: RedisCacheService,
         private readonly jwtService: JwtService,
         private readonly fileUploadService: FileUploadService,
         private readonly eventEmitter: EventEmitter2,
         private readonly tutorRepository: TutorRepository,
-    ) {}
+        private readonly emailService: EmailService,
+    ) {
+        // this.sendVerificationEmail({ id: 1, name: "Waruna Udayanga", email: "avawaruna@gmail.com" } as User);
+    }
 
     // noinspection JSUnusedGlobalSymbols
     public static generateRandomHash(): string {
@@ -85,6 +94,7 @@ export class AuthService {
             eh,
         );
         this.eventEmitter.emit(WebhookEvent.USER_REGISTERED, user);
+        await this.sendVerificationEmail(user);
         return user;
     }
 
@@ -171,6 +181,51 @@ export class AuthService {
         } catch (err: any) {
             LoggerService.error(err);
             return null;
+        }
+    }
+
+    async sendVerificationEmail(user: User): Promise<void> {
+        const token = AuthService.generateRandomHash();
+        await this.verificationService.save({ user, token });
+        await this.emailService.sendVerificationEmail(user.email, user.name, token);
+    }
+
+    async verifyAccount(token: string): Promise<SuccessResponse> {
+        const verification = await this.verificationService.getOne({ where: { token }, relations: ["user"] });
+        if (verification) {
+            await this.userService.update(verification.user.id, { status: Status.ACTIVE });
+            await this.verificationService.deleteToken(verification.id);
+            return new SuccessResponse("Account verified successfully");
+        }
+        throw new NotFoundException(AuthErrors.AUTH_401_INVALID_VERIFICATION_TOKEN);
+    }
+
+    async resendVerification(email: string): Promise<SuccessResponse> {
+        try {
+            const user = await this.userService.getOne({ where: { email } });
+            if (user) {
+                if (user.status === Status.ACTIVE) {
+                    return Promise.reject(new BadRequestException(AuthErrors.AUTH_400_ALREADY_VERIFIED));
+                }
+                try {
+                    const verification = await this.verificationService.getOne({
+                        where: { user: { id: user.id }, type: VerificationType.EMAIL },
+                    });
+                    await this.verificationService.deleteToken(verification.id);
+                } catch (err) {
+                    if (!(err instanceof NotFoundException)) {
+                        return Promise.reject(err);
+                    }
+                }
+                await this.sendVerificationEmail(user);
+                return new SuccessResponse("Verification email sent successfully");
+            }
+            return Promise.reject(new NotFoundException(AuthErrors.AUTH_404_EMAIL));
+        } catch (err) {
+            if (err instanceof NotFoundException) {
+                throw new NotFoundException(AuthErrors.AUTH_404_EMAIL);
+            }
+            throw err;
         }
     }
 }

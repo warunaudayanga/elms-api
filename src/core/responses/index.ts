@@ -1,2 +1,2 @@
-export * from "./common.error.responses";
+export * from "./error.responses";
 export * from "./success.response";
