@@ -22,8 +22,20 @@ export class StudentController {
     @UseGuards(JwtAuthGuard, RoleGuard)
     @Roles(Role.STUDENT)
     @Post("enroll")
-    enroll(@ReqUser() student: User, @Body() enrollDto: EnrollClassDto): Promise<ClassStudent> {
-        return this.studentService.enrollToClass(student.id, enrollDto.classRoomId);
+    enroll(@ReqUser() user: User, @Body() enrollDto: EnrollClassDto): Promise<ClassStudent> {
+        return this.studentService.enrollToClass(user.id, enrollDto.classRoomId);
+    }
+
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles(Role.STUDENT)
+    @Get("find-classes")
+    findClasses(
+        @Query() filters: FilterClassRoomDto,
+        @Sorter() sort: ISort<ClassRoom>,
+        @Pager() pagination?: IPagination,
+        @Query("keyword") keyword?: string,
+    ): Promise<IPaginatedResponse<ClassRoom> | ClassRoom[]> {
+        return this.studentService.findClasses(filters, sort, pagination, keyword);
     }
 
     @UseGuards(JwtAuthGuard, RoleGuard)

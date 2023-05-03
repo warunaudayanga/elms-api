@@ -51,12 +51,14 @@ export class TutorService {
     }
 
     async requestClassCreate(userId: number, createClassRoomDto: Partial<ClassRoom>): Promise<ClassRoom> {
-        return await this.classRoomService.createCLassRoom(
+        let classRoom = await this.classRoomService.createCLassRoom(
             { ...createClassRoomDto, status: Status.PENDING },
             {
                 relations: classRoomRelationsAll,
             },
         );
+        this.socketService.sendMessage(AppEvent.CLASS_REQUESTED, classRoom, userId);
+        return classRoom;
     }
 
     async requestClassUpdate(userId: number, id: number, updateClassRoomDto: UpdateClassRoomDto): Promise<ClassRoom> {

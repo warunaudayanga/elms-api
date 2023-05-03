@@ -9,6 +9,26 @@ const AuthErrors = {
         code: "AUTH_400_EMPTY_PASSWORD",
         message: "Password cannot be empty!",
     },
+    AUTH_400_EMPTY_EMAIL: {
+        status: 400,
+        code: "AUTH_400_EMPTY_EMAIL",
+        message: "Email cannot be empty!",
+    },
+    AUTH_400_EMPTY_TOKEN: {
+        status: 400,
+        code: "AUTH_400_EMPTY_TOKEN",
+        message: "Token cannot be empty!",
+    },
+    AUTH_400_ALREADY_VERIFIED: {
+        status: 400,
+        code: "AUTH_400_ALREADY_VERIFIED",
+        message: "Account already verified!",
+    },
+    AUTH_400_ACCOUNT_DISABLED: {
+        status: 400,
+        code: "AUTH_400_ACCOUNT_DISABLED",
+        message: "Account disabled!",
+    },
     AUTH_401_CORS: {
         status: 401,
         code: "AUTH_401_CORS",
@@ -49,6 +69,11 @@ const AuthErrors = {
         code: "AUTH_401_INVALID_TOKEN",
         message: "Invalid or expired token received!",
     },
+    AUTH_401_INVALID_VERIFICATION_TOKEN: {
+        status: 401,
+        code: "AUTH_401_INVALID_VERIFICATION_TOKEN",
+        message: "Invalid or expired verification token received!",
+    },
     AUTH_401_INVALID_REFRESH_TOKEN: {
         status: 401,
         code: "AUTH_401_INVALID_REFRESH_TOKEN",
@@ -65,6 +90,11 @@ const AuthErrors = {
         status: 403,
         code: "AUTH_403_ROLE_FORBIDDEN",
         message: "User doesn't have privileges to access this resource!",
+    },
+    AUTH_404_EMAIL: {
+        status: 404,
+        code: "AUTH_404_EMAIL",
+        message: "Cannot find a user account with this email!",
     },
     AUTH_500_REGISTER: {
         status: 500,

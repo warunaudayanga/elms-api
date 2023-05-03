@@ -15,6 +15,13 @@ import { CustomStripeModule } from "./elms/modules/stripe/stripe.module";
 import { RouteInfo } from "@nestjs/common/interfaces";
 import { RawBodyMiddleware } from "./core/middlewares/row-body-parser.middleware";
 import { JsonBodyMiddleware } from "./core/middlewares/json-body-parser.middleware";
+import { MailerModule } from "@nestjs-modules/mailer";
+import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
+import { join } from "path";
+
+const getSmtpTransport = (): string => {
+    return `smtps://${configuration().email.user}:${configuration().email.pass}@${configuration().email.host}`;
+};
 
 const rawBodyRoutes: Array<RouteInfo> = [
     {
@@ -29,6 +36,19 @@ const rawBodyRoutes: Array<RouteInfo> = [
         CommonModule,
         ScheduleModule.forRoot(),
         EventEmitterModule.forRoot(),
+        MailerModule.forRoot({
+            transport: getSmtpTransport(),
+            defaults: {
+                from: `"eLMS" <${configuration().email.user}>`,
+            },
+            template: {
+                dir: join(__dirname + "/modules/common/templates"),
+                adapter: new HandlebarsAdapter(),
+                options: {
+                    strict: true,
+                },
+            },
+        }),
         TypeOrmModule.forRoot({
             type: configuration().database.type as MysqlConnectionOptions["type"],
             host: configuration().database.host,

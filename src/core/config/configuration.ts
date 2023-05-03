@@ -50,6 +50,7 @@ export default () => ({
         secure: true,
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
+        verifyUrl: process.env.EMAIL_VERIFY_URL,
     },
     pushover: {
         url: process.env.PUSHOVER_URL,

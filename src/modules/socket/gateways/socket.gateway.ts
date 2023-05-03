@@ -19,7 +19,7 @@ import { SocketEvent } from "../enums";
 import { WSExceptionFilter } from "../filters";
 import { LoggerService } from "../../../core/services";
 import { WSMessage, WSMessageResponse } from "../interfaces";
-import { CommonErrors } from "../../../core/responses";
+import { Errors } from "../../../core/responses";
 import { AuthErrors } from "../../auth/responses";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
@@ -63,7 +63,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
             throw new WsException({
                 rid: message.rid,
                 event: message.event,
-                response: err.response || CommonErrors.ERROR,
+                response: err.response || Errors.ERROR,
             });
         }
     }

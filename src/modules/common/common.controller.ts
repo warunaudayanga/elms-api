@@ -4,7 +4,7 @@ import { createReadStream } from "fs";
 import { join } from "path";
 import configuration from "src/core/config/configuration";
 import { Endpoint } from "src/core/enums";
-import { CommonErrors } from "src/core/responses";
+import { Errors } from "src/core/responses";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { WebhookEvent } from "src/modules/webhook/enums/webhook-event.enum";
 
@@ -23,7 +23,7 @@ export class CommonController {
             });
             return new StreamableFile(file);
         } catch (e) {
-            throw new NotFoundException(CommonErrors.E_404_FILE_NOT_EXIST);
+            throw new NotFoundException(Errors.E_404_FILE_NOT_EXIST);
         }
     }
 
