@@ -68,6 +68,8 @@ export class ClassSchedule {
     @ManyToOne(() => User)
     deletedBy?: User;
 
+    needZooAuthentication?: boolean;
+
     @AfterLoad()
     afterLoad(): void {
         this.createdBy = this.createdBy

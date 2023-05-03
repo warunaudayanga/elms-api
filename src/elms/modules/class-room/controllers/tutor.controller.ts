@@ -7,12 +7,12 @@ import { Role } from "../../../../modules/auth/enums";
 import { User } from "../../../../modules/auth/entities";
 import { IPaginatedResponse, IPagination, ISort } from "../../../../core/entity";
 import {
-    FilterClassRoomDto,
-    SetScheduleDto,
     CreateAssessmentDto,
     CreateClassRoomDto,
-    UpdateClassRoomDto,
+    FilterClassRoomDto,
+    SetScheduleDto,
     UpdateAssessmentDto,
+    UpdateClassRoomDto,
 } from "../dtos";
 import { Assessment } from "../entities/assessment.entity";
 import { ClassRoom } from "../entities/class-room.entity";
@@ -39,8 +39,8 @@ export class TutorController {
     @UseGuards(JwtAuthGuard, RoleGuard)
     @Roles(Role.TUTOR)
     @Get("classes/:id")
-    getClass(@Param("id", ParseIntPipe) id: number): Promise<ClassRoom> {
-        return this.tutorService.getClass(id);
+    getClass(@ReqUser() user: User, @Param("id", ParseIntPipe) id: number): Promise<ClassRoom> {
+        return this.tutorService.getClass(user.id, id);
     }
 
     @UseGuards(JwtAuthGuard, RoleGuard)

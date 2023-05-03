@@ -6,11 +6,11 @@ import { ClassSchedule } from "../entities/schedule.entity";
 import { classRoomRelations, classRoomRelationsAll, ClassStudentsRepository } from "../repositories";
 import { IPaginatedResponse, IPagination, ISort } from "../../../../core/entity";
 import {
+    CreateAssessmentDto,
     FilterClassRoomDto,
     SetScheduleDto,
-    CreateAssessmentDto,
-    UpdateClassRoomDto,
     UpdateAssessmentDto,
+    UpdateClassRoomDto,
 } from "../dtos";
 import { ClassRoomService } from "./class-room.service";
 import { ScheduleService } from "./schedule.service";
@@ -18,6 +18,8 @@ import { SocketService } from "../../../../modules/socket/services";
 import { Status } from "../../../../core/enums";
 import { AppEvent } from "../../../../core/enums/app-event.enum";
 import { AssessmentService } from "./assessment.service";
+import { ZoomService } from "../../zoom/services/zoom.service";
+import { ZoomErrors } from "../responses/zoom.error.responses";
 
 @Injectable()
 export class TutorService {
@@ -26,6 +28,7 @@ export class TutorService {
         private readonly classRoomService: ClassRoomService,
         private readonly scheduleService: ScheduleService,
         private readonly assessmentService: AssessmentService,
+        private readonly zoomService: ZoomService,
         private readonly socketService: SocketService,
     ) {}
 
@@ -46,8 +49,21 @@ export class TutorService {
         });
     }
 
-    async getClass(id: number): Promise<ClassRoom> {
-        return await this.classRoomService.get(id, { relations: classRoomRelationsAll });
+    async getClass(userId: number, id: number): Promise<ClassRoom> {
+        let classRoom = await this.classRoomService.get(id, { relations: classRoomRelationsAll });
+        if (classRoom.schedule) {
+            try {
+                const meeting = await this.zoomService.getMeeting(userId, classRoom.schedule.meetingId);
+                if (meeting) {
+                    classRoom.schedule.meeting = meeting;
+                }
+            } catch (err) {
+                if (err.response.code === ZoomErrors.ZOOM_401_UNAUTHORIZED.code) {
+                    classRoom.schedule.needZooAuthentication = true;
+                }
+            }
+        }
+        return classRoom;
     }
 
     async requestClassCreate(userId: number, createClassRoomDto: Partial<ClassRoom>): Promise<ClassRoom> {

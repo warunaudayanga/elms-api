@@ -80,15 +80,4 @@ export class ClassRoomService extends EntityService<ClassRoom> {
         });
         return res instanceof Array ? classes : { ...res, data: classes };
     }
-
-    async get(id: number, options?: FindOneOptions<ClassRoom>, manager?: EntityManager, eh?: EH): Promise<ClassRoom> {
-        let classRoom = await super.get(id, options, manager, eh);
-        if (classRoom.schedule) {
-            const meeting = await this.zoomService.getMeeting(classRoom.schedule.meetingId);
-            if (meeting) {
-                classRoom.schedule.meeting = meeting;
-            }
-        }
-        return classRoom;
-    }
 }

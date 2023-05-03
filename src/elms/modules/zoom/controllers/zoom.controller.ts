@@ -8,6 +8,8 @@ import { RoleGuard } from "../../../../core/guards/role.guard";
 import { ZoomService } from "../services/zoom.service";
 import { CreateMeetingDto } from "../dtos/create-meeting.dto";
 import { GenerateTokenDto } from "../dtos/generate-token.dto";
+import { ReqUser } from "../../../../core/decorators";
+import { User } from "../../../../modules/auth/entities";
 
 @Controller(Endpoint.ZOOM)
 export class ZoomController {
@@ -26,51 +28,51 @@ export class ZoomController {
     @UseGuards(JwtAuthGuard, RoleGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.TUTOR)
     @Post("generate-token")
-    generateToken(@Body() generateTokenDto: GenerateTokenDto): Promise<boolean> {
-        return this.zoomService.generateToken(generateTokenDto);
+    generateToken(@ReqUser() user: User, @Body() generateTokenDto: GenerateTokenDto): Promise<boolean> {
+        return this.zoomService.generateToken(user.id, generateTokenDto);
     }
 
     @UseGuards(JwtAuthGuard, RoleGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.TUTOR)
     @Post("refresh-token")
-    refreshToken(): Promise<boolean> {
-        return this.zoomService.refreshToken();
+    refreshToken(@ReqUser() user: User): Promise<boolean> {
+        return this.zoomService.refreshToken(user.id);
     }
 
     @UseGuards(JwtAuthGuard, RoleGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.TUTOR)
     @Post("user")
-    user(): Promise<any> {
+    user(@ReqUser() user: User): Promise<any> {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return this.zoomService.getZoomUser();
+        return this.zoomService.getZoomUser(user.id);
     }
 
     @UseGuards(JwtAuthGuard, RoleGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.TUTOR)
     @Post("create-meeting")
-    createMeeting(@Body() createMeetingDto: CreateMeetingDto): any {
-        return this.zoomService.createMeeting(createMeetingDto.topic);
+    createMeeting(@ReqUser() user: User, @Body() createMeetingDto: CreateMeetingDto): any {
+        return this.zoomService.createMeeting(user.id, createMeetingDto.topic);
     }
 
     @UseGuards(JwtAuthGuard, RoleGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.TUTOR)
     @Get("meeting/:id")
-    getMeeting(@Param("id", ParseIntPipe) id?: number): any {
-        return this.zoomService.getMeeting(id);
+    getMeeting(@ReqUser() user: User, @Param("id", ParseIntPipe) id?: number): any {
+        return this.zoomService.getMeeting(user.id, id);
     }
 
     @UseGuards(JwtAuthGuard, RoleGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.TUTOR)
     @Get("meeting")
-    getMeetings(): any {
-        return this.zoomService.getMeeting();
+    getMeetings(@ReqUser() user: User): any {
+        return this.zoomService.getMeeting(user.id);
     }
 
     @UseGuards(JwtAuthGuard, RoleGuard)
     // @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.TUTOR)
     @Post("get-zak-token")
-    getZakToken(): any {
-        return this.zoomService.getZakToken();
+    getZakToken(@ReqUser() user: User): any {
+        return this.zoomService.getZakToken(user.id);
     }
 
     @UseGuards(JwtAuthGuard, RoleGuard)

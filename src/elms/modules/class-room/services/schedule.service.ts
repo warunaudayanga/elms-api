@@ -21,24 +21,37 @@ export class ScheduleService extends EntityService<ClassSchedule> {
         super(socketService, scheduleRepository, "schedule");
     }
 
-    async saveClassSchedule(
+    saveClassSchedule(
         userId: number,
         classRoomId: number,
         createScheduleDto: Partial<ClassSchedule>,
     ): Promise<ClassSchedule> {
-        let classSchedule = await super.save(
-            { ...createScheduleDto, createdBy: { id: userId } },
-            { relations: ["classRoom"] },
-        );
-        const classRoom = await this.classRoomService.update(classRoomId, { schedule: classSchedule });
-        classSchedule.classRoom = classRoom;
-        const meeting = await this.zoomService.createMeeting(classRoom.name);
-        if (meeting) {
-            classSchedule.meetingId = meeting.id;
-            classSchedule.joinUrl = meeting.join_url;
-            await this.update(classSchedule.id, { meetingId: meeting.id, joinUrl: meeting.join_url });
-        }
-        return classSchedule;
+        return this.scheduleRepository.transaction(async (manager) => {
+            let classSchedule = await super.save(
+                { ...createScheduleDto, createdBy: { id: userId } },
+                { relations: ["classRoom"] },
+                manager,
+            );
+            const classRoom = await this.classRoomService.update(
+                classRoomId,
+                { schedule: classSchedule },
+                null,
+                manager,
+            );
+            classSchedule.classRoom = classRoom;
+            const meeting = await this.zoomService.createMeeting(userId, classRoom.name);
+            if (meeting) {
+                classSchedule.meetingId = meeting.id;
+                classSchedule.joinUrl = meeting.join_url;
+                await this.update(
+                    classSchedule.id,
+                    { meetingId: meeting.id, joinUrl: meeting.join_url },
+                    null,
+                    manager,
+                );
+            }
+            return classSchedule;
+        });
     }
 
     async updateClassSchedule(userId: number, id: number, updateDto: Partial<ClassSchedule>): Promise<ClassSchedule> {
