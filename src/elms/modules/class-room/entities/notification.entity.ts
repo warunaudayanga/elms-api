@@ -23,6 +23,9 @@ export class Notification {
     @Column({ nullable: true })
     userId: number;
 
+    @Column({ type: "json", nullable: true })
+    metadata: object;
+
     @ManyToOne(() => User, (user) => user.notifications)
     @JoinColumn({ foreignKeyConstraintName: FKConstraint.NOTIFICATION_USER })
     user?: User;

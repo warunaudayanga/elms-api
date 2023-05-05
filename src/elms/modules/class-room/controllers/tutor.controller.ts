@@ -18,6 +18,8 @@ import { Assessment } from "../entities/assessment.entity";
 import { ClassRoom } from "../entities/class-room.entity";
 import { ClassSchedule } from "../entities/schedule.entity";
 import { TutorService } from "../services";
+import { NotifyMeetingStartDto } from "../../zoom/dtos/notify-meeting-start.dto";
+import { SuccessResponse } from "../../../../core/responses";
 
 @Controller(Endpoint.TUTOR)
 export class TutorController {
@@ -100,5 +102,14 @@ export class TutorController {
         @Body() updateAssessmentDto: UpdateAssessmentDto,
     ): Promise<Assessment> {
         return this.tutorService.updateAssessment(user.id, id, updateAssessmentDto);
+    }
+
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Post("notify-meeting-started")
+    notifyMeetingStarted(
+        @ReqUser() user: User,
+        @Body() notifyStartDto: NotifyMeetingStartDto,
+    ): Promise<SuccessResponse> {
+        return this.tutorService.notifyMeetingStarted(user.id, notifyStartDto);
     }
 }

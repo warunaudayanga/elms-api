@@ -26,6 +26,9 @@ import { AssessmentService } from "./assessment.service";
 import { ZoomService } from "../../zoom/services/zoom.service";
 import { ZoomErrors } from "../responses/zoom.error.responses";
 import { AssessmentSubmissionService } from "./assessment-submission.service";
+import { NotifyMeetingStartDto } from "../../zoom/dtos/notify-meeting-start.dto";
+import { SuccessResponse } from "../../../../core/responses";
+import { NotificationService } from "./notification.service";
 
 @Injectable()
 export class TutorService {
@@ -37,6 +40,7 @@ export class TutorService {
         private readonly assessmentSubmissionService: AssessmentSubmissionService,
         private readonly zoomService: ZoomService,
         private readonly socketService: SocketService,
+        private readonly notificationService: NotificationService,
     ) {}
 
     getMyClasses(
@@ -119,5 +123,15 @@ export class TutorService {
 
     getSubmissions(assessmentId: number): Promise<Assessment> {
         return this.assessmentService.get(assessmentId, { relations: assessmentRelations });
+    }
+
+    async notifyMeetingStarted(userId: number, notifyStartDto: NotifyMeetingStartDto): Promise<SuccessResponse> {
+        const classRoom = await this.classRoomService.get(notifyStartDto.classRoomId, {
+            relations: classRoomRelations,
+        });
+        const studentIds = classRoom.classStudents.map((cs) => cs.studentId);
+        const content = `Zoom Meeting for class ${classRoom.name} has started`;
+        await this.notificationService.createNotification(content, studentIds);
+        return new SuccessResponse();
     }
 }

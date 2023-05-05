@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Get, Post, Res, UseGuards, UseInterceptors } from "@nestjs/common";
 import { Response } from "express";
 import { ACCESS_TOKEN_COOKIE_NAME, AuthService, REFRESH_TOKEN_COOKIE_NAME } from "../services";
 import { User } from "src/modules/auth/entities/user.entity";
@@ -53,6 +53,12 @@ export class AuthController {
     @Post("verify-account")
     verifyAccount(@Body() verificationDto: VerificationDto): Promise<SuccessResponse> {
         return this.authService.verifyAccount(verificationDto.token);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get("me")
+    getMe(@ReqUser() user: User): Promise<User> {
+        return this.authService.getMe(user.id);
     }
 
     @Post("resend-verification")

@@ -5,6 +5,7 @@ import { SocketService } from "src/modules/socket/services/socket.service";
 import { ChatRoom } from "../entities/chat-room.entity";
 import { ChatRoomRepository } from "../repositories";
 
+// noinspection JSUnusedGlobalSymbols
 export const chatRoomRelations = ["createdBy", "members", "members.user"];
 
 @Injectable()

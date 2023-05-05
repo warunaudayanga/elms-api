@@ -228,4 +228,8 @@ export class AuthService {
             throw err;
         }
     }
+
+    getMe(id: number): Promise<User> {
+        return this.userService.get(id, { relations: userRelations });
+    }
 }

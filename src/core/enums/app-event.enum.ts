@@ -18,4 +18,7 @@ export enum AppEvent {
     ASSESSMENT_SUBMITTED = "assessment.submitted",
     ASSESSMENT_UN_SUBMITTED = "assessment.unsubmitted",
     NOTIFICATION_CREATED = "notification.created",
+    NOTIFICATION_READ = "notification.read",
+    NOTIFICATION_DELETE = "notification.delete",
+    MEETING_STARTED = "meeting.started",
 }
