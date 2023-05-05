@@ -8,9 +8,9 @@ import { AreaRepository } from "../repositories";
 @Injectable()
 export class AreaService extends EntityService<Area> {
     constructor(
-        @InjectRepository(AreaRepository) private readonly gradeRepository: AreaRepository,
+        @InjectRepository(AreaRepository) private readonly areaRepository: AreaRepository,
         protected readonly socketService: SocketService,
     ) {
-        super(socketService, gradeRepository, "area", "name");
+        super(socketService, areaRepository, "area", "name");
     }
 }

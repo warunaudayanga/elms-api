@@ -23,6 +23,7 @@ import { Tutor } from "../../../elms/modules/class-room/entities/tutor.entity";
 import { GuardianRelationship } from "../../../elms/modules/class-room/enums";
 import { Role } from "../enums";
 import { FKConstraint, UNIQUEConstraint } from "../../../core/enums/constraint.enum";
+import { Notification } from "../../../elms/modules/class-room/entities/notification.entity";
 
 @Unique(UNIQUEConstraint.USER_USERNAME, ["username"])
 @Unique(UNIQUEConstraint.USER_EMAIL, ["email"])
@@ -103,6 +104,9 @@ export class User {
 
     @OneToMany(() => ClassStudent, (classStudents) => classStudents.student)
     classStudents?: ClassStudent[];
+
+    @OneToMany(() => Notification, (notifications) => notifications.user)
+    notifications?: Notification[];
 
     @OneToMany(() => MessageUserStatus, (messageUserStatus) => messageUserStatus.reader)
     messageUserStatus?: MessageUserStatus[];

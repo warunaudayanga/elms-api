@@ -75,6 +75,13 @@ export class TutorController {
 
     @UseGuards(JwtAuthGuard, RoleGuard)
     @Roles(Role.TUTOR)
+    @Get("classes/assessment/:id")
+    getAssessment(@Param("id", ParseIntPipe) id: number): Promise<Assessment> {
+        return this.tutorService.getSubmissions(id);
+    }
+
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles(Role.TUTOR)
     @Post("classes/:id/assessment")
     createAssessment(
         @Param("id", ParseIntPipe) classRoomId: number,

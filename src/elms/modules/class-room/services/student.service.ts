@@ -92,6 +92,9 @@ export class StudentService {
 
     async getClass(id: number, studentId: number): Promise<ClassRoom> {
         let classRoom = await this.classRoomService.get(id, { relations: classRoomRelationsAll });
+        classRoom.assessments.forEach((assessment) => {
+            assessment.submission = assessment.submissions.find((s) => s.studentId === studentId);
+        });
         return { ...classRoom, isPaid: this.isPaid(studentId, classRoom) } as ClassRoom;
     }
 
@@ -127,13 +130,14 @@ export class StudentService {
             studentId: userId,
             assessmentId: id,
             answers: submitAssessmentDto.answers,
+            status: Status.ACTIVE,
         });
         await this.socketService.sendMessage(AppEvent.ASSESSMENT_SUBMITTED, assessmentSubmission, userId);
         return assessmentSubmission;
     }
 
     async unSubmitAssessment(user: User, id: number): Promise<AssessmentSubmission> {
-        const assessmentSubmission = await this.assessmentSubmissionService.delete(id, user);
+        const assessmentSubmission = await this.assessmentSubmissionService.delete(id, user, true);
         await this.socketService.sendMessage(AppEvent.ASSESSMENT_UN_SUBMITTED, id, user.id);
         return assessmentSubmission;
     }

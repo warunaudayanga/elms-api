@@ -3,7 +3,12 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Assessment } from "../entities/assessment.entity";
 import { ClassRoom } from "../entities/class-room.entity";
 import { ClassSchedule } from "../entities/schedule.entity";
-import { classRoomRelations, classRoomRelationsAll, ClassStudentsRepository } from "../repositories";
+import {
+    assessmentRelations,
+    classRoomRelations,
+    classRoomRelationsAll,
+    ClassStudentsRepository,
+} from "../repositories";
 import { IPaginatedResponse, IPagination, ISort } from "../../../../core/entity";
 import {
     CreateAssessmentDto,
@@ -20,6 +25,7 @@ import { AppEvent } from "../../../../core/enums/app-event.enum";
 import { AssessmentService } from "./assessment.service";
 import { ZoomService } from "../../zoom/services/zoom.service";
 import { ZoomErrors } from "../responses/zoom.error.responses";
+import { AssessmentSubmissionService } from "./assessment-submission.service";
 
 @Injectable()
 export class TutorService {
@@ -28,6 +34,7 @@ export class TutorService {
         private readonly classRoomService: ClassRoomService,
         private readonly scheduleService: ScheduleService,
         private readonly assessmentService: AssessmentService,
+        private readonly assessmentSubmissionService: AssessmentSubmissionService,
         private readonly zoomService: ZoomService,
         private readonly socketService: SocketService,
     ) {}
@@ -108,5 +115,9 @@ export class TutorService {
         let assessment = await this.assessmentService.update(id, updateAssessmentDto, { relations: ["submissions"] });
         this.socketService.sendMessage(AppEvent.ASSESSMENT_UPDATED, assessment, userId);
         return assessment;
+    }
+
+    getSubmissions(assessmentId: number): Promise<Assessment> {
+        return this.assessmentService.get(assessmentId, { relations: assessmentRelations });
     }
 }

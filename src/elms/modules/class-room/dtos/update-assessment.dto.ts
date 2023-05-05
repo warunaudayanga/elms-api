@@ -16,4 +16,10 @@ export class UpdateAssessmentDto {
 
     @IsOptional()
     passMarks?: number;
+
+    @IsOptional()
+    startTime?: string;
+
+    @IsOptional()
+    endTime?: string;
 }
