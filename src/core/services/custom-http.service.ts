@@ -11,6 +11,7 @@ import {
 import { HttpService } from "@nestjs/axios";
 import { AxiosError, AxiosRequestConfig } from "axios";
 import { take } from "rxjs";
+import { LoggerService } from "./logger.service";
 
 @Injectable()
 export class CustomHttpService {
@@ -107,6 +108,7 @@ export class CustomHttpService {
     }
 
     throwException(error: AxiosError): void {
+        LoggerService.error(error.response);
         switch (error.response?.status as HttpStatus) {
             case HttpStatus.BAD_REQUEST:
                 throw new BadRequestException(error.response.data);

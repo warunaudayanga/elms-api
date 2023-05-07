@@ -1,4 +1,4 @@
-const CommonErrors = {
+const Errors = {
     E_400_EMPTY_IDS: {
         status: 400,
         code: "#{upperSnakeCase}_400_EMPTY_IDS",
@@ -41,4 +41,4 @@ const CommonErrors = {
     },
 };
 
-export { CommonErrors };
+export { Errors };

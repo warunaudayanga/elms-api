@@ -17,6 +17,7 @@ import { RedisCacheService } from "../../../../modules/cache/services/redis-cach
 import { ZoomErrors } from "../../class-room/responses/zoom.error.responses";
 import { createHmac } from "crypto";
 import { GenerateTokenDto } from "../dtos/generate-token.dto";
+import { LoggerService } from "../../../../core/services";
 
 @Injectable()
 export class ZoomService {
@@ -27,7 +28,7 @@ export class ZoomService {
         return Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
     }
 
-    async generateToken(generateTokenDto: GenerateTokenDto): Promise<boolean> {
+    async generateToken(userId: number, generateTokenDto: GenerateTokenDto): Promise<boolean> {
         try {
             const res = await this.http.post<ZoomTokenResponse>(
                 configuration().zoom.urls.accessToken,
@@ -43,10 +44,10 @@ export class ZoomService {
                     },
                 },
             );
-            await this.cacheService.set("access_token", res.access_token);
-            await this.cacheService.set("refresh_token", res.refresh_token);
-            await this.cacheService.set("expires_in", res.expires_in);
-            await this.cacheService.set("scope", res.scope);
+            await this.cacheService.setUserData(userId, "access_token", res.access_token);
+            await this.cacheService.setUserData(userId, "refresh_token", res.refresh_token);
+            await this.cacheService.setUserData(userId, "expires_in", res.expires_in);
+            await this.cacheService.setUserData(userId, "scope", res.scope);
             return true;
         } catch (e) {
             console.log(e);
@@ -54,9 +55,9 @@ export class ZoomService {
         }
     }
 
-    async refreshToken(): Promise<boolean> {
+    async refreshToken(userId: number): Promise<boolean> {
         try {
-            const refreshToken = await this.cacheService.get<string>("refresh_token");
+            const refreshToken = await this.cacheService.getUserData<string>(userId, "refresh_token");
             const res: ZoomTokenResponse = await this.http.post(
                 configuration().zoom.urls.accessToken,
                 {
@@ -70,19 +71,19 @@ export class ZoomService {
                     },
                 },
             );
-            await this.cacheService.set("access_token", res.access_token);
-            await this.cacheService.set("refresh_token", res.refresh_token);
-            await this.cacheService.set("expires_in", res.expires_in);
-            await this.cacheService.set("scope", res.scope);
+            await this.cacheService.setUserData(userId, "access_token", res.access_token);
+            await this.cacheService.setUserData(userId, "refresh_token", res.refresh_token);
+            await this.cacheService.setUserData(userId, "expires_in", res.expires_in);
+            await this.cacheService.setUserData(userId, "scope", res.scope);
             return true;
         } catch (e) {
             throw new UnauthorizedException(ZoomErrors.ZOOM_401_UNAUTHORIZED);
         }
     }
 
-    async getZoomUser(): Promise<ZoomUser> {
+    async getZoomUser(userId: number): Promise<ZoomUser> {
         try {
-            const accessToken = await this.cacheService.get<string>("access_token");
+            const accessToken = await this.cacheService.getUserData<string>(userId, "access_token");
             if (!accessToken) {
                 return Promise.reject(new UnauthorizedException(ZoomErrors.ZOOM_401_UNAUTHORIZED));
             }
@@ -91,16 +92,16 @@ export class ZoomService {
             });
         } catch (e) {
             if (e instanceof UnauthorizedException) {
-                await this.refreshToken();
-                return await this.getZoomUser();
+                await this.refreshToken(userId);
+                return await this.getZoomUser(userId);
             }
             throw e;
         }
     }
 
-    async createMeeting(topic?: string): Promise<ZoomCreateMeetingResponse> {
+    async createMeeting(userId: number, topic?: string): Promise<ZoomCreateMeetingResponse> {
         try {
-            const accessToken = await this.cacheService.get<string>("access_token");
+            const accessToken = await this.cacheService.getUserData<string>(userId, "access_token");
             if (!accessToken) {
                 return Promise.reject(new UnauthorizedException(ZoomErrors.ZOOM_401_UNAUTHORIZED));
             }
@@ -113,20 +114,20 @@ export class ZoomService {
             );
         } catch (e) {
             if (e instanceof UnauthorizedException) {
-                await this.refreshToken();
-                return await this.createMeeting(topic);
+                await this.refreshToken(userId);
+                return await this.createMeeting(userId, topic);
             }
             throw e;
         }
     }
 
-    async getMeeting(): Promise<PaginatedZoomResponse<ZoomMeeting>>;
+    async getMeeting(userId: number): Promise<PaginatedZoomResponse<ZoomMeeting>>;
 
-    async getMeeting(id: number): Promise<ZoomMeeting>;
+    async getMeeting(userId: number, id: number): Promise<ZoomMeeting>;
 
-    async getMeeting(id?: number): Promise<ZoomMeeting | PaginatedZoomResponse<ZoomMeeting>> {
+    async getMeeting(userId: number, id?: number): Promise<ZoomMeeting | PaginatedZoomResponse<ZoomMeeting>> {
         try {
-            const accessToken = await this.cacheService.get<string>("access_token");
+            const accessToken = await this.cacheService.getUserData<string>(userId, "access_token");
             if (!accessToken) {
                 return Promise.reject(new UnauthorizedException(ZoomErrors.ZOOM_401_UNAUTHORIZED));
             }
@@ -139,17 +140,18 @@ export class ZoomService {
                 },
             );
         } catch (e) {
+            LoggerService.error(e);
             if (e instanceof UnauthorizedException) {
-                await this.refreshToken();
-                return await this.getMeeting(id);
+                await this.refreshToken(userId);
+                return await this.getMeeting(userId, id);
             }
             throw e;
         }
     }
 
-    async getZakToken(): Promise<ZakTokenResponse> {
+    async getZakToken(userId: number): Promise<ZakTokenResponse> {
         try {
-            const accessToken = await this.cacheService.get<string>("access_token");
+            const accessToken = await this.cacheService.getUserData<string>(userId, "access_token");
             if (!accessToken) {
                 return Promise.reject(new UnauthorizedException(ZoomErrors.ZOOM_401_UNAUTHORIZED));
             }
@@ -161,8 +163,8 @@ export class ZoomService {
             );
         } catch (e) {
             if (e instanceof UnauthorizedException) {
-                await this.refreshToken();
-                return await this.getZakToken();
+                await this.refreshToken(userId);
+                return await this.getZakToken(userId);
             }
             throw e;
         }

@@ -56,6 +56,9 @@ import {
     StudentService,
     TutorService,
 } from "./services";
+import { Notification } from "./entities/notification.entity";
+import { NotificationRepository } from "./repositories/notification.repository";
+import { NotificationService } from "./services/notification.service";
 
 @Module({
     imports: [
@@ -88,6 +91,8 @@ import {
             AssessmentRepository,
             AssessmentSubmission,
             AssessmentSubmissionRepository,
+            Notification,
+            NotificationRepository,
         ]),
         ZoomModule,
     ],
@@ -115,6 +120,7 @@ import {
         MessageService,
         AssessmentService,
         AssessmentSubmissionService,
+        NotificationService,
     ],
 })
 export class ClassRoomModule {}

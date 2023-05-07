@@ -9,6 +9,7 @@ import { EntityErrorResponse } from "../entity";
 @Catch()
 export class AllExceptionsFilter extends BaseExceptionFilter {
     catch(exception: unknown, host: ArgumentsHost): any {
+        LoggerService.error(exception);
         let ex: any = exception;
         let request = host.switchToHttp().getRequest<Request>();
         try {

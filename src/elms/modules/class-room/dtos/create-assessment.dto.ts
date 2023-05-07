@@ -16,4 +16,10 @@ export class CreateAssessmentDto {
 
     @IsOptional()
     passMarks?: number;
+
+    @IsNotEmpty()
+    startTime: string;
+
+    @IsNotEmpty()
+    endTime: string;
 }

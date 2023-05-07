@@ -282,18 +282,17 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
 
     async delete(id: number, deletedBy: User, wipe?: boolean, manager?: EntityManager, eh?: EH): Promise<Entity> {
         try {
-            const deletedRecord = await this.get(id, undefined, manager);
+            let deletedRecord = await this.get(id, undefined, manager);
             const { affected } = wipe
                 ? await this.repository.hardDelete(id, manager)
                 : await this.repository.delete(id, manager);
             if (affected !== 0) {
                 if (!wipe && deletedBy) {
                     try {
-                        await this.update(id, { deletedBy } as any, undefined, manager);
+                        deletedRecord = await this.update(id, { deletedBy } as any, undefined, manager);
                     } catch (err: any) {}
-                    return deletedRecord;
                 }
-                // return EntityUtils.handleSuccess(Operation.DELETE, this.entityName);
+                return deletedRecord;
             }
             return Promise.reject(new NotFoundException(EntityErrors.E_404_ID(this.entityName)));
         } catch (e: any) {

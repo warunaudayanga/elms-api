@@ -7,17 +7,19 @@ import { Role } from "../../../../modules/auth/enums";
 import { User } from "../../../../modules/auth/entities";
 import { IPaginatedResponse, IPagination, ISort } from "../../../../core/entity";
 import {
-    FilterClassRoomDto,
-    SetScheduleDto,
     CreateAssessmentDto,
     CreateClassRoomDto,
-    UpdateClassRoomDto,
+    FilterClassRoomDto,
+    SetScheduleDto,
     UpdateAssessmentDto,
+    UpdateClassRoomDto,
 } from "../dtos";
 import { Assessment } from "../entities/assessment.entity";
 import { ClassRoom } from "../entities/class-room.entity";
 import { ClassSchedule } from "../entities/schedule.entity";
 import { TutorService } from "../services";
+import { NotifyMeetingStartDto } from "../../zoom/dtos/notify-meeting-start.dto";
+import { SuccessResponse } from "../../../../core/responses";
 
 @Controller(Endpoint.TUTOR)
 export class TutorController {
@@ -39,8 +41,8 @@ export class TutorController {
     @UseGuards(JwtAuthGuard, RoleGuard)
     @Roles(Role.TUTOR)
     @Get("classes/:id")
-    getClass(@Param("id", ParseIntPipe) id: number): Promise<ClassRoom> {
-        return this.tutorService.getClass(id);
+    getClass(@ReqUser() user: User, @Param("id", ParseIntPipe) id: number): Promise<ClassRoom> {
+        return this.tutorService.getClass(user.id, id);
     }
 
     @UseGuards(JwtAuthGuard, RoleGuard)
@@ -75,6 +77,13 @@ export class TutorController {
 
     @UseGuards(JwtAuthGuard, RoleGuard)
     @Roles(Role.TUTOR)
+    @Get("classes/assessment/:id")
+    getAssessment(@Param("id", ParseIntPipe) id: number): Promise<Assessment> {
+        return this.tutorService.getSubmissions(id);
+    }
+
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles(Role.TUTOR)
     @Post("classes/:id/assessment")
     createAssessment(
         @Param("id", ParseIntPipe) classRoomId: number,
@@ -93,5 +102,14 @@ export class TutorController {
         @Body() updateAssessmentDto: UpdateAssessmentDto,
     ): Promise<Assessment> {
         return this.tutorService.updateAssessment(user.id, id, updateAssessmentDto);
+    }
+
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Post("notify-meeting-started")
+    notifyMeetingStarted(
+        @ReqUser() user: User,
+        @Body() notifyStartDto: NotifyMeetingStartDto,
+    ): Promise<SuccessResponse> {
+        return this.tutorService.notifyMeetingStarted(user.id, notifyStartDto);
     }
 }

@@ -3,14 +3,19 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Assessment } from "../entities/assessment.entity";
 import { ClassRoom } from "../entities/class-room.entity";
 import { ClassSchedule } from "../entities/schedule.entity";
-import { classRoomRelations, classRoomRelationsAll, ClassStudentsRepository } from "../repositories";
+import {
+    assessmentRelations,
+    classRoomRelations,
+    classRoomRelationsAll,
+    ClassStudentsRepository,
+} from "../repositories";
 import { IPaginatedResponse, IPagination, ISort } from "../../../../core/entity";
 import {
+    CreateAssessmentDto,
     FilterClassRoomDto,
     SetScheduleDto,
-    CreateAssessmentDto,
-    UpdateClassRoomDto,
     UpdateAssessmentDto,
+    UpdateClassRoomDto,
 } from "../dtos";
 import { ClassRoomService } from "./class-room.service";
 import { ScheduleService } from "./schedule.service";
@@ -18,6 +23,12 @@ import { SocketService } from "../../../../modules/socket/services";
 import { Status } from "../../../../core/enums";
 import { AppEvent } from "../../../../core/enums/app-event.enum";
 import { AssessmentService } from "./assessment.service";
+import { ZoomService } from "../../zoom/services/zoom.service";
+import { ZoomErrors } from "../responses/zoom.error.responses";
+import { AssessmentSubmissionService } from "./assessment-submission.service";
+import { NotifyMeetingStartDto } from "../../zoom/dtos/notify-meeting-start.dto";
+import { SuccessResponse } from "../../../../core/responses";
+import { NotificationService } from "./notification.service";
 
 @Injectable()
 export class TutorService {
@@ -26,7 +37,10 @@ export class TutorService {
         private readonly classRoomService: ClassRoomService,
         private readonly scheduleService: ScheduleService,
         private readonly assessmentService: AssessmentService,
+        private readonly assessmentSubmissionService: AssessmentSubmissionService,
+        private readonly zoomService: ZoomService,
         private readonly socketService: SocketService,
+        private readonly notificationService: NotificationService,
     ) {}
 
     getMyClasses(
@@ -46,17 +60,32 @@ export class TutorService {
         });
     }
 
-    async getClass(id: number): Promise<ClassRoom> {
-        return await this.classRoomService.get(id, { relations: classRoomRelationsAll });
+    async getClass(userId: number, id: number): Promise<ClassRoom> {
+        let classRoom = await this.classRoomService.get(id, { relations: classRoomRelationsAll });
+        if (classRoom.schedule) {
+            try {
+                const meeting = await this.zoomService.getMeeting(userId, classRoom.schedule.meetingId);
+                if (meeting) {
+                    classRoom.schedule.meeting = meeting;
+                }
+            } catch (err) {
+                if (err.response.code === ZoomErrors.ZOOM_401_UNAUTHORIZED.code) {
+                    classRoom.schedule.needZooAuthentication = true;
+                }
+            }
+        }
+        return classRoom;
     }
 
     async requestClassCreate(userId: number, createClassRoomDto: Partial<ClassRoom>): Promise<ClassRoom> {
-        return await this.classRoomService.createCLassRoom(
+        let classRoom = await this.classRoomService.createCLassRoom(
             { ...createClassRoomDto, status: Status.PENDING },
             {
                 relations: classRoomRelationsAll,
             },
         );
+        this.socketService.sendMessage(AppEvent.CLASS_REQUESTED, classRoom, userId);
+        return classRoom;
     }
 
     async requestClassUpdate(userId: number, id: number, updateClassRoomDto: UpdateClassRoomDto): Promise<ClassRoom> {
@@ -90,5 +119,19 @@ export class TutorService {
         let assessment = await this.assessmentService.update(id, updateAssessmentDto, { relations: ["submissions"] });
         this.socketService.sendMessage(AppEvent.ASSESSMENT_UPDATED, assessment, userId);
         return assessment;
+    }
+
+    getSubmissions(assessmentId: number): Promise<Assessment> {
+        return this.assessmentService.get(assessmentId, { relations: assessmentRelations });
+    }
+
+    async notifyMeetingStarted(userId: number, notifyStartDto: NotifyMeetingStartDto): Promise<SuccessResponse> {
+        const classRoom = await this.classRoomService.get(notifyStartDto.classRoomId, {
+            relations: classRoomRelations,
+        });
+        const studentIds = classRoom.classStudents.map((cs) => cs.studentId);
+        const content = `Zoom Meeting for class ${classRoom.name} has started`;
+        await this.notificationService.createNotification(content, studentIds);
+        return new SuccessResponse();
     }
 }

@@ -6,7 +6,6 @@ import { ClassRoom } from "../entities/class-room.entity";
 import { ClassRoomRepository } from "../repositories";
 import { EntityManager, FindOneOptions } from "typeorm";
 import { EH } from "../../../../core/entity/entity.types";
-import { ZoomService } from "../../zoom/services/zoom.service";
 import { ChatRoomService } from "./chat-room.service";
 import { GradeService } from "./grade.service";
 import { ClassSubjectService } from "./class-subject.service";
@@ -20,7 +19,6 @@ export class ClassRoomService extends EntityService<ClassRoom> {
         protected readonly gradeService: GradeService,
         protected readonly subjectService: ClassSubjectService,
         protected readonly socketService: SocketService,
-        protected readonly zoomService: ZoomService,
     ) {
         super(socketService, classRoomRepository, "classRoom");
     }
@@ -30,7 +28,7 @@ export class ClassRoomService extends EntityService<ClassRoom> {
             const classRoom = await this.classRoomRepository.saveAndGet(createClassRoomDto, options, manager);
             await this.chatRoomService.save(
                 { name: classRoom.name, classRoom, users: [{ id: classRoom.tutorId }] },
-                undefined,
+                null,
                 manager,
             );
             return classRoom;
@@ -79,16 +77,5 @@ export class ClassRoomService extends EntityService<ClassRoom> {
             }
         });
         return res instanceof Array ? classes : { ...res, data: classes };
-    }
-
-    async get(id: number, options?: FindOneOptions<ClassRoom>, manager?: EntityManager, eh?: EH): Promise<ClassRoom> {
-        let classRoom = await super.get(id, options, manager, eh);
-        if (classRoom.schedule) {
-            const meeting = await this.zoomService.getMeeting(classRoom.schedule.meetingId);
-            if (meeting) {
-                classRoom.schedule.meeting = meeting;
-            }
-        }
-        return classRoom;
     }
 }

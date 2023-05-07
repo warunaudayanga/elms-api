@@ -3,8 +3,9 @@
 
 import { readFileSync, writeFileSync } from "fs";
 import { LoggerService as NestLogger } from "@nestjs/common";
-import { Logger, ILogObject } from "tslog";
+import { ILogObject, Logger } from "tslog";
 import configuration from "../config/configuration";
+
 // import { WebhookService } from "../modules";
 
 export class LoggerService implements NestLogger {
@@ -66,8 +67,10 @@ export class LoggerService implements NestLogger {
             try {
                 logFileArray = JSON.parse(readFileSync(`${filename}.json`).toString());
             } catch (err: any) {
-                logFileArray = [];
-                writeFileSync(`${filename}.json`, JSON.stringify(logFileArray, null, 2));
+                try {
+                    logFileArray = [];
+                    writeFileSync(`${filename}.json`, JSON.stringify(logFileArray, null, 2));
+                } catch (err) {}
             }
 
             logFileArray.push({ time: new Date().toLocaleString(), logObject });
@@ -75,8 +78,10 @@ export class LoggerService implements NestLogger {
             if (logFileArray.length > 100) {
                 logFileArray.splice(0, logFileArray.length - 100);
             }
-
-            writeFileSync(`${filename}.json`, JSON.stringify(logFileArray, null, 2));
+            try {
+                logFileArray = [];
+                writeFileSync(`${filename}.json`, JSON.stringify(logFileArray, null, 2));
+            } catch (err) {}
         }
     }
 

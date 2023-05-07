@@ -1,9 +1,9 @@
 import { IsArray, IsNotEmpty } from "class-validator";
 import { toErrString } from "../converters";
-import { CommonErrors } from "../responses";
+import { Errors } from "../responses";
 
 export class BulkDeleteDto {
-    @IsArray(toErrString(CommonErrors.E_400_INVALID_IDS))
-    @IsNotEmpty(toErrString(CommonErrors.E_400_EMPTY_IDS))
+    @IsArray(toErrString(Errors.E_400_INVALID_IDS))
+    @IsNotEmpty(toErrString(Errors.E_400_EMPTY_IDS))
     ids: number[];
 }

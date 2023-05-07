@@ -22,6 +22,7 @@ import { AssessmentService } from "./assessment.service";
 import { ChatRoomService } from "./chat-room.service";
 import { ClassRoomService } from "./class-room.service";
 import { MessageService } from "./message.service";
+import { IsNull, Not } from "typeorm";
 
 @Injectable()
 export class StudentService {
@@ -35,12 +36,13 @@ export class StudentService {
         private readonly socketService: SocketService,
     ) {}
 
-    async enrollToClass(studentId: number, classRoomId: number): Promise<ClassStudent> {
+    async enrollToClass(userId: number, classRoomId: number): Promise<ClassStudent> {
         try {
-            let classStudent = await this.classStudentsRepository.saveAndGet({ classRoomId, studentId });
+            let classStudent = await this.classStudentsRepository.saveAndGet({ classRoomId, studentId: userId });
             const chatRoom = await this.chatRoomService.getOne({ where: { classRoomId }, relations: ["users"] });
-            chatRoom.users.push({ id: studentId } as User);
+            chatRoom.users.push({ id: userId } as User);
             await this.chatRoomService.save(chatRoom);
+            await this.socketService.sendMessage(AppEvent.ASSESSMENT_SUBMITTED, classStudent, userId);
             return classStudent;
         } catch (e: any) {
             if (e.code === "ER_DUP_ENTRY" && e.sqlMessage.includes(UNIQUEConstraint.CLASS_STUDENT_CLASS_ROOM_STUDENT)) {
@@ -48,6 +50,22 @@ export class StudentService {
             }
             throw new InternalServerErrorException();
         }
+    }
+
+    async findClasses(
+        filters: FilterClassRoomDto,
+        sort: ISort<ClassRoom>,
+        pagination: IPagination,
+        keyword: string,
+    ): Promise<IPaginatedResponse<ClassRoom> | ClassRoom[]> {
+        return await this.classRoomService.getMany({
+            pagination,
+            sort,
+            filters: { status: Status.ACTIVE, ...filters },
+            search: keyword ? { name: keyword } : {},
+            where: { scheduleId: Not(IsNull()) },
+            relations: classRoomRelations,
+        });
     }
 
     async getMyClasses(
@@ -74,6 +92,9 @@ export class StudentService {
 
     async getClass(id: number, studentId: number): Promise<ClassRoom> {
         let classRoom = await this.classRoomService.get(id, { relations: classRoomRelationsAll });
+        classRoom.assessments.forEach((assessment) => {
+            assessment.submission = assessment.submissions.find((s) => s.studentId === studentId);
+        });
         return { ...classRoom, isPaid: this.isPaid(studentId, classRoom) } as ClassRoom;
     }
 
@@ -109,13 +130,14 @@ export class StudentService {
             studentId: userId,
             assessmentId: id,
             answers: submitAssessmentDto.answers,
+            status: Status.ACTIVE,
         });
         await this.socketService.sendMessage(AppEvent.ASSESSMENT_SUBMITTED, assessmentSubmission, userId);
         return assessmentSubmission;
     }
 
     async unSubmitAssessment(user: User, id: number): Promise<AssessmentSubmission> {
-        const assessmentSubmission = await this.assessmentSubmissionService.delete(id, user);
+        const assessmentSubmission = await this.assessmentSubmissionService.delete(id, user, true);
         await this.socketService.sendMessage(AppEvent.ASSESSMENT_UN_SUBMITTED, id, user.id);
         return assessmentSubmission;
     }
