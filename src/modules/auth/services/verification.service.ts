@@ -4,6 +4,7 @@ import { Verification } from "../entities";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SocketService } from "../../socket/services";
 import { VerificationRepository } from "../repositories/verification.repository";
+import { EntityManager } from "typeorm";
 
 @Injectable()
 export class VerificationService extends EntityService<Verification> {
@@ -14,8 +15,8 @@ export class VerificationService extends EntityService<Verification> {
         super(socketService, verificationRepository, "verification");
     }
 
-    async deleteToken(id: number): Promise<boolean> {
-        await this.verificationRepository.hardDelete(id);
+    async deleteToken(id: number, manager?: EntityManager): Promise<boolean> {
+        await this.verificationRepository.hardDelete(id, manager);
         return true;
     }
 }

@@ -31,6 +31,8 @@ import { VerificationService } from "./verification.service";
 import { EmailService } from "../../common/services";
 import { SuccessResponse } from "../../../core/responses";
 import { VerificationType } from "../enums/verification-type.enum";
+import { RequestResetDto } from "../dtos/request-reset.dto";
+import { ResetPasswordDto } from "../dtos/reset-password.dto";
 
 export const ACCESS_TOKEN_COOKIE_NAME = "Authorization";
 export const REFRESH_TOKEN_COOKIE_NAME = "Refresh";
@@ -184,14 +186,11 @@ export class AuthService {
         }
     }
 
-    async sendVerificationEmail(user: User): Promise<void> {
-        const token = AuthService.generateRandomHash();
-        await this.verificationService.save({ user, token });
-        await this.emailService.sendVerificationEmail(user.email, user.name, token);
-    }
-
     async verifyAccount(token: string): Promise<SuccessResponse> {
-        const verification = await this.verificationService.getOne({ where: { token }, relations: ["user"] });
+        const verification = await this.verificationService.getOne({
+            where: { token, type: VerificationType.EMAIL },
+            relations: ["user"],
+        });
         if (verification) {
             await this.userService.update(verification.user.id, { status: Status.ACTIVE });
             await this.verificationService.deleteToken(verification.id);
@@ -231,5 +230,52 @@ export class AuthService {
 
     getMe(id: number): Promise<User> {
         return this.userService.get(id, { relations: userRelations });
+    }
+
+    async sendVerificationEmail(user: User): Promise<void> {
+        const token = AuthService.generateRandomHash();
+        await this.verificationService.save({ user, token, type: VerificationType.EMAIL });
+        await this.emailService.sendVerificationEmail(user.email, user.name, token);
+    }
+
+    async requestPasswordReset(requestResetDto: RequestResetDto): Promise<SuccessResponse> {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        try {
+            const user = await this.userService.getOne({ where: { email: requestResetDto.email } });
+            if (user) {
+                const token = AuthService.generateRandomHash();
+                await this.verificationService.save({ user, token, type: VerificationType.PASSWORD_RESET });
+                await this.emailService.sendPasswordResetEmail(user.email, user.name, token);
+                return new SuccessResponse("Password reset email sent successfully");
+            }
+        } catch (err) {
+            if (err instanceof NotFoundException) {
+                throw new NotFoundException(AuthErrors.AUTH_404_EMAIL);
+            }
+            throw err;
+        }
+    }
+
+    resetPassword(resetPasswordDto: ResetPasswordDto): Promise<IStatusResponse> {
+        return this.userService.transaction(async (manager: EntityManager): Promise<IStatusResponse> => {
+            try {
+                const { token, password } = resetPasswordDto;
+                const verification = await this.verificationService.getOne(
+                    {
+                        where: { token, type: VerificationType.PASSWORD_RESET },
+                        relations: ["user"],
+                    },
+                    manager,
+                );
+                if (verification) {
+                    const { password: passwordHash, salt } = AuthService.generatePassword(password);
+                    await this.userService.update(verification.userId, { password: passwordHash, salt }, null, manager);
+                    await this.verificationService.deleteToken(verification.id, manager);
+                    return EntityUtils.handleSuccess(Operation.UPDATE, "user");
+                }
+            } catch {
+                throw new NotFoundException(AuthErrors.AUTH_401_INVALID_PASSWORD_RESET_TOKEN);
+            }
+        });
     }
 }

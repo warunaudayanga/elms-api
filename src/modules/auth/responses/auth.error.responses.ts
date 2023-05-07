@@ -74,6 +74,11 @@ const AuthErrors = {
         code: "AUTH_401_INVALID_VERIFICATION_TOKEN",
         message: "Invalid or expired verification token received!",
     },
+    AUTH_401_INVALID_PASSWORD_RESET_TOKEN: {
+        status: 401,
+        code: "AUTH_401_INVALID_PASSWORD_RESET_TOKEN",
+        message: "Invalid or expired password reset token token received!",
+    },
     AUTH_401_INVALID_REFRESH_TOKEN: {
         status: 401,
         code: "AUTH_401_INVALID_REFRESH_TOKEN",

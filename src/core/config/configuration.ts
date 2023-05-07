@@ -11,6 +11,8 @@ export default () => ({
         adminPassword: process.env.APP_ADMIN_DEFAULT_PASSWORD || "admin@123",
         allowedOrigins: String(process.env.APP_ALLOWED_ORIGINS).split(",") || [],
         webUrl: process.env.APP_WEB_URL || "http://localhost:4200",
+        emailVerifyUrl: process.env.APP_EMAIL_VERIFY_URL,
+        passwordResetUrl: process.env.APP_PASSWORD_RESET_URL,
     },
     cookies: {
         secret: process.env.APP_COOKIE_SECRET || "secret",
@@ -50,7 +52,6 @@ export default () => ({
         secure: true,
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
-        verifyUrl: process.env.EMAIL_VERIFY_URL,
     },
     pushover: {
         url: process.env.PUSHOVER_URL,

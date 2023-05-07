@@ -32,7 +32,9 @@ async function bootstrap(): Promise<void> {
         },
         credentials: true,
     });
-    // app.setViewEngine("");
+    // app.useStaticAssets(join(__dirname, "..", "public"));
+    // app.setBaseViewsDir(join(__dirname, "..", "views"));
+    // app.setViewEngine("hbs");
     await app.listen(configuration().app.port);
 }
 // noinspection JSIgnoredPromiseFromCall
