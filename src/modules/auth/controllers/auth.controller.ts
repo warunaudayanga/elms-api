@@ -15,6 +15,8 @@ import { SuccessResponse } from "../../../core/responses";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { VerificationDto } from "../dtos/verification.dto";
 import { ResendVerificationDto } from "../dtos/resend-verification.dto";
+import { RequestResetDto } from "../dtos/request-reset.dto";
+import { ResetPasswordDto } from "../dtos/reset-password.dto";
 
 @Controller(Endpoint.AUTH)
 export class AuthController {
@@ -70,6 +72,16 @@ export class AuthController {
     @Post("change-password")
     changePassword(@ReqUser() user: User, @Body() updatePasswordDto: UpdatePasswordDto): Promise<IStatusResponse> {
         return this.authService.changePassword(user.id, updatePasswordDto);
+    }
+
+    @Post("request-password-reset")
+    requestPasswordReset(@Body() requestResetDto: RequestResetDto): Promise<SuccessResponse> {
+        return this.authService.requestPasswordReset(requestResetDto);
+    }
+
+    @Post("reset-password")
+    resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<IStatusResponse> {
+        return this.authService.resetPassword(resetPasswordDto);
     }
 
     @Post("logout")

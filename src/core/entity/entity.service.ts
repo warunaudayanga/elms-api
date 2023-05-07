@@ -349,4 +349,8 @@ export abstract class EntityService<Entity extends Partial<IBaseEntity>> {
             EntityUtils.handleError(e, this.entityName, this.uniqueFieldName);
         }
     }
+
+    transaction<T>(operation: (entityManager: EntityManager) => Promise<T>): Promise<T> {
+        return this.repository.transaction(operation);
+    }
 }
