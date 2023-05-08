@@ -53,6 +53,21 @@ export class StripeService {
         userId: number,
         paymentIntentDto: PaymentIntentDto,
     ): Promise<Stripe.Response<Stripe.PaymentIntent>> {
+        // ------------------------------------------------
+        const classStudent = await this.classStudentsRepository.findOne({
+            where: { studentId: userId, classRoomId: paymentIntentDto.metadata.classRoomId },
+        });
+        await this.paymentService.save({
+            classStudent: { id: classStudent.id },
+            amount: paymentIntentDto.metadata.amount / 100,
+            currency: "LKR",
+            status: PaymentStatus.PAID,
+            fromDate: paymentIntentDto.metadata.fromDate,
+            toDate: paymentIntentDto.metadata.toDate,
+            transactionId: "stripeResponse.id",
+            stripeData: {},
+        });
+        // ------------------------------------------------
         return await this.stripe.paymentIntents.create({
             amount: parseInt(String(paymentIntentDto.amount)),
             currency: "lkr",
