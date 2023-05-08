@@ -1,5 +1,13 @@
 import { PaymentMetadata } from "../types/stripe.types";
 
+export interface ClassFeeMeta {
+    classRoomId: number;
+    studentId: number;
+    amount: number;
+    fromDate: string;
+    toDate: string;
+}
+
 export interface StripePayment<T = any> {
     amount: number;
     metadata: PaymentMetadata<T>;
