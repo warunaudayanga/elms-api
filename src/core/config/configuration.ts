@@ -41,7 +41,7 @@ export default () => ({
         port: Number(process.env.REDIS_PORT) || 6379,
         password: process.env.REDIS_PASSWORD,
         ttl: Number(process.env.REDIS_CACHE_TTL) || 7890000,
-        uri: `redis://${process.env.REDIS_HOST || "localhost"}:${process.env.REDIS_PORT || 6379}`,
+        url: process.env.REDIS_URL || undefined,
     },
     logs: {
         fileName: process.env.LOG_FILE || "errors",
