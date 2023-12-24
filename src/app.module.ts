@@ -10,8 +10,6 @@ import { MysqlConnectionOptions } from "typeorm/driver/mysql/MysqlConnectionOpti
 import { AuthModule, CommonModule, SeedingModule, SocketModule, WebhookModule } from "./modules";
 import { ClassRoomModule } from "./elms/modules/class-room/class-room.module";
 import { ZoomModule } from "./elms/modules/zoom/zoom.module";
-import { StripeModule } from "nestjs-stripe";
-import { CustomStripeModule } from "./elms/modules/stripe/stripe.module";
 import { RouteInfo } from "@nestjs/common/interfaces";
 import { RawBodyMiddleware } from "./core/middlewares/row-body-parser.middleware";
 import { JsonBodyMiddleware } from "./core/middlewares/json-body-parser.middleware";
@@ -66,8 +64,6 @@ const rawBodyRoutes: Array<RouteInfo> = [
             keepConnectionAlive: true,
             autoLoadEntities: true,
         }),
-        StripeModule.forRoot({ apiKey: configuration().stripe.apiKey, apiVersion: "2022-11-15" }),
-        CustomStripeModule,
         SocketModule,
         WebhookModule,
         SeedingModule,
