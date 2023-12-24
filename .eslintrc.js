@@ -254,7 +254,6 @@ module.exports = {
     "quotes": "warn",
     "radix": "off",
     "require-atomic-updates": "error",
-    "require-await": "error",
     "require-unicode-regexp": "off",
     "rest-spread-spacing": "error",
     "semi": "error",

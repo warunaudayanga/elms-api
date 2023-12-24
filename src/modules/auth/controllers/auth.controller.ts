@@ -35,18 +35,20 @@ export class AuthController {
         @Body() authDataDto: AuthDto,
         @Res({ passthrough: true }) response: Response,
     ): Promise<User> {
-        const tokenResponse = await this.authService.generateTokens(user);
+        const tokenResponse = this.authService.generateTokens(user);
         await this.cacheService.setUser(user);
         response.cookie(ACCESS_TOKEN_COOKIE_NAME, tokenResponse.accessToken, {
             maxAge: Number(configuration().jwt.secretExp) * 1000,
             httpOnly: true,
             sameSite: configuration().cookies.sameSite,
+            secure: configuration().cookies.secure,
             signed: true,
         });
         response.cookie(REFRESH_TOKEN_COOKIE_NAME, tokenResponse.refreshToken, {
             maxAge: Number(configuration().jwt.refreshSecretExp) * 1000,
             httpOnly: true,
             sameSite: configuration().cookies.sameSite,
+            secure: configuration().cookies.secure,
             signed: true,
         });
         return user;
