@@ -14,7 +14,6 @@ import { Assessment } from "../entities/assessment.entity";
 import { ClassRoom } from "../entities/class-room.entity";
 import { ClassStudent } from "../entities/class-students.entity";
 import { Message } from "../entities/message.entity";
-import { PaymentStatus } from "../enums";
 import { classRoomRelations, classRoomRelationsAll, ClassStudentsRepository } from "../repositories";
 import { ClassRoomErrors } from "../responses";
 import { AssessmentSubmissionService } from "./assessment-submission.service";
@@ -23,6 +22,7 @@ import { ChatRoomService } from "./chat-room.service";
 import { ClassRoomService } from "./class-room.service";
 import { MessageService } from "./message.service";
 import { IsNull, Not } from "typeorm";
+import { PaymentStatus } from "../../payment/enums/payment-status.enum";
 
 @Injectable()
 export class StudentService {
@@ -103,7 +103,7 @@ export class StudentService {
             !Number(classRoom.payment) ||
                 classRoom.classStudents
                     ?.find((cs) => cs.studentId === id)
-                    ?.payments?.find((p) => isThisMonth(p.fromDate) && p.status === PaymentStatus.PAID),
+                    ?.classPayments?.find((p) => isThisMonth(p.payment?.fromDate) && p.status === PaymentStatus.PAID),
         );
     }
 

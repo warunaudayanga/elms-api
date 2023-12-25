@@ -14,4 +14,5 @@ export enum Endpoint {
     ME = "me",
     TUTOR = "tutor",
     STUDENT = "student",
+    PAYMENT = "payment",
 }

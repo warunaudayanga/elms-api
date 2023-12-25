@@ -54,7 +54,7 @@ export class SocketService {
         return null;
     }
 
-    async getUserByToken(bearerToken): Promise<User> {
+    async getUserByToken(bearerToken: string): Promise<User> {
         const [user] = (await this.eventEmitter.emitAsync(AppEvent.USER_GET_BY_TOKEN, bearerToken)) as [User];
         return user;
     }
@@ -84,7 +84,7 @@ export class SocketService {
         return this.users.find((c) => c.id !== id)?.socket;
     }
 
-    getUsersSockets(ids: number[]): Socket[] {
+    getUserSockets(ids: number[]): Socket[] {
         return this.users.filter((c) => ids.includes(c.id))?.map((c) => c.socket);
     }
 

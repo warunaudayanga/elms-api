@@ -16,6 +16,7 @@ import { JsonBodyMiddleware } from "./core/middlewares/json-body-parser.middlewa
 import { MailerModule } from "@nestjs-modules/mailer";
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
 import { join } from "path";
+import { PaymentModule } from "./elms/modules/payment/payment.module";
 
 const getSmtpTransport = (): string => {
     return `smtps://${configuration().email.user}:${configuration().email.pass}@${configuration().email.host}`;
@@ -70,6 +71,7 @@ const rawBodyRoutes: Array<RouteInfo> = [
         AuthModule,
         ZoomModule,
         ClassRoomModule,
+        PaymentModule,
     ],
     controllers: [AppController],
     providers: [AppService],

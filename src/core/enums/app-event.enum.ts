@@ -21,4 +21,5 @@ export enum AppEvent {
     NOTIFICATION_READ = "notification.read",
     NOTIFICATION_DELETE = "notification.delete",
     MEETING_STARTED = "meeting.started",
+    PAYMENT_OCCURRED = "payment.occurred",
 }

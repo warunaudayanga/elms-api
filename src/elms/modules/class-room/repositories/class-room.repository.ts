@@ -3,14 +3,15 @@ import { BaseRepository, relations } from "../../../../core/entity";
 import { ClassRoom } from "../entities/class-room.entity";
 import { IClassRoomRepository } from "../interfaces/repositories";
 
-export const classRoomRelations = ["grade", "subject", "tutor", "schedule", "classStudents", "classStudents.payments"];
+export const classRoomRelations = ["grade", "subject", "tutor", "schedule", "classStudents"];
 export const classRoomRelationsAll = [
     "grade",
     "subject",
     "tutor",
     "schedule",
     "classStudents",
-    "classStudents.payments",
+    "classStudents.classPayments",
+    "classStudents.classPayments.payment",
     "chatRoom",
     "chatRoom.users",
     "assessments",

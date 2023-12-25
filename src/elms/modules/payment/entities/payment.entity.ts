@@ -1,16 +1,6 @@
-import {
-    Column,
-    CreateDateColumn,
-    DeleteDateColumn,
-    Entity,
-    JoinColumn,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn,
-} from "typeorm";
-import { PaymentStatus } from "../enums";
-import { ClassStudent } from "./class-students.entity";
-import { FKConstraint } from "../../../../core/enums/constraint.enum";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { PaymentStatus } from "../enums/payment-status.enum";
+import { PaymentNotifyDto } from "../dtos/payment-notify.dto";
 
 @Entity({ name: "payments" })
 export class Payment {
@@ -18,7 +8,7 @@ export class Payment {
     id: number;
 
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: false })
-    amount: number;
+    amount: string;
 
     @Column({ length: 3, nullable: false })
     currency: string;
@@ -35,12 +25,8 @@ export class Payment {
     @Column({ type: "enum", enum: PaymentStatus, nullable: false })
     status: PaymentStatus;
 
-    @ManyToOne(() => ClassStudent, (classStudent) => classStudent.payments)
-    @JoinColumn({ foreignKeyConstraintName: FKConstraint.PAYMENT_CLASS_STUDENTS })
-    classStudent?: ClassStudent;
-
     @Column({ type: "json", nullable: false })
-    stripeData: object;
+    paymentResponse: PaymentNotifyDto;
 
     @CreateDateColumn()
     createdAt: Date;

@@ -14,8 +14,8 @@ import {
 import { Status } from "../../../../core/enums";
 import { ClassRoom } from "./class-room.entity";
 import { User } from "../../../../modules/auth/entities";
-import { Payment } from "./payment.entity";
 import { FKConstraint, UNIQUEConstraint } from "../../../../core/enums/constraint.enum";
+import { ClassPayment } from "./class-payment.entity";
 
 @Unique(UNIQUEConstraint.CLASS_STUDENT_CLASS_ROOM_STUDENT, ["classRoom", "student"])
 @Entity({ name: "class_students" })
@@ -34,8 +34,8 @@ export class ClassStudent {
     @JoinColumn({ foreignKeyConstraintName: FKConstraint.CLASS_STUDENTS_STUDENT })
     student?: User;
 
-    @OneToMany(() => Payment, (payment) => payment.classStudent)
-    payments?: Payment[];
+    @OneToMany(() => ClassPayment, (classPayment) => classPayment.classStudent)
+    classPayments?: ClassPayment[];
 
     @PrimaryGeneratedColumn()
     id: number;

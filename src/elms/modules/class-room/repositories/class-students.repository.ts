@@ -4,7 +4,7 @@ import { ClassStudent } from "../entities/class-students.entity";
 import { IClassStudentsRepository } from "../interfaces/repositories";
 
 // noinspection JSUnusedGlobalSymbols
-export const classStudentRelations = ["classRoom", "student", "payments", ...relations];
+export const classStudentRelations = ["classRoom", "student", "classPayments", ...relations];
 
 @CustomRepository(ClassStudent)
 export class ClassStudentsRepository extends BaseRepository<ClassStudent> implements IClassStudentsRepository {}

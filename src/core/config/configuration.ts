@@ -69,9 +69,9 @@ export default () => ({
         dateOnly: new RegExp(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/),
         pollCode: new RegExp(/^[-_\w]+$/),
     },
-    stripe: {
-        apiKey: process.env.STRIPE_API_KEY,
-        webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+    payhere: {
+        merchantId: process.env.PAYHERE_MERCHANT_ID,
+        secret: process.env.PAYHERE_SECRET,
     },
     zoom: {
         clientId: process.env.ZOOM_WEB_CLIENT_ID,

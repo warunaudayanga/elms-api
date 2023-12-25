@@ -21,7 +21,6 @@ import { ClassStudent } from "./entities/class-students.entity";
 import { Grade } from "./entities/grade.entity";
 import { MessageUserStatus } from "./entities/message-user-status.entity";
 import { Message } from "./entities/message.entity";
-import { Payment } from "./entities/payment.entity";
 import { ClassScheduleHistory } from "./entities/schedule-history.entity";
 import { ClassSchedule } from "./entities/schedule.entity";
 import { ClassSubject } from "./entities/subject.entity";
@@ -38,7 +37,6 @@ import {
     GradeRepository,
     MessageRepository,
     MessageUserStatusRepository,
-    PaymentRepository,
     TutorRepository,
 } from "./repositories";
 import { AssessmentSubmissionRepository } from "./repositories/assessment-submission.repository";
@@ -51,7 +49,6 @@ import {
     ClassSubjectService,
     GradeService,
     MessageService,
-    PaymentService,
     ScheduleService,
     StudentService,
     TutorService,
@@ -59,6 +56,7 @@ import {
 import { Notification } from "./entities/notification.entity";
 import { NotificationRepository } from "./repositories/notification.repository";
 import { NotificationService } from "./services/notification.service";
+import { PaymentModule } from "../payment/payment.module";
 
 @Module({
     imports: [
@@ -69,8 +67,6 @@ import { NotificationService } from "./services/notification.service";
             ClassStudentsRepository,
             Grade,
             GradeRepository,
-            Payment,
-            PaymentRepository,
             ClassSchedule,
             ClassScheduleRepository,
             ClassScheduleHistory,
@@ -94,6 +90,7 @@ import { NotificationService } from "./services/notification.service";
             Notification,
             NotificationRepository,
         ]),
+        PaymentModule,
         ZoomModule,
     ],
     controllers: [
@@ -115,7 +112,6 @@ import { NotificationService } from "./services/notification.service";
         ClassSubjectService,
         AreaService,
         StudentService,
-        PaymentService,
         ChatRoomService,
         MessageService,
         AssessmentService,

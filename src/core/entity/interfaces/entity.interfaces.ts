@@ -1,6 +1,6 @@
 // import { EntityFieldsNames } from "typeorm/common/EntityFieldsNames";
 import { Status } from "../../enums";
-import { FindManyOptions, FindOneOptions, FindOptionsWhere, ObjectID } from "typeorm";
+import { FindManyOptions, FindOneOptions, FindOptionsWhere, ObjectId } from "typeorm";
 import { FindOptionsOrder } from "typeorm/find-options/FindOptionsOrder";
 import { User } from "../../../modules/auth/entities";
 
@@ -11,8 +11,8 @@ export type FindConditions<Entity> =
     | number[]
     | Date
     | Date[]
-    | ObjectID
-    | ObjectID[]
+    | ObjectId
+    | ObjectId[]
     | FindOptionsWhere<Entity>;
 
 export interface IQueryError {

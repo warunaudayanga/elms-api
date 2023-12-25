@@ -21,6 +21,7 @@ import { ClassSchedule } from "./schedule.entity";
 import { ChatRoom } from "./chat-room.entity";
 import { FKConstraint } from "../../../../core/enums/constraint.enum";
 import { Assessment } from "./assessment.entity";
+import { ClassPayment } from "./class-payment.entity";
 
 @Entity({ name: "classes" })
 export class ClassRoom {
@@ -64,6 +65,9 @@ export class ClassRoom {
     @OneToOne(() => ClassSchedule)
     @JoinColumn({ foreignKeyConstraintName: FKConstraint.CLASS_ROOM_SCHEDULE })
     schedule?: ClassSchedule;
+
+    @OneToMany(() => ClassPayment, (classPayment) => classPayment.classRoom)
+    classPayments?: ClassPayment[];
 
     @OneToMany(() => ClassStudent, (classStudents) => classStudents.classRoom)
     classStudents?: ClassStudent[];

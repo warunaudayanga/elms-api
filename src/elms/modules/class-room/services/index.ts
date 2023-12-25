@@ -6,7 +6,7 @@ export * from "./class-room.service";
 export * from "./class-subject.service";
 export * from "./grade.service";
 export * from "./message.service";
-export * from "./payment.service";
+export * from "../../payment/services/payment.service";
 export * from "./schedule.service";
 export * from "./student.service";
 export * from "./tutor.service";
