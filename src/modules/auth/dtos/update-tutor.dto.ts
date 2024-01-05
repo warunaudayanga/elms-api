@@ -9,6 +9,9 @@ export class UpdateTutorDto {
     @IsNotEmpty(toErrString(UserErrors.USER_400_EMPTY_LAST_NAME))
     lastName: string;
 
+    @IsNotEmpty(toErrString(UserErrors.USER_400_EMPTY_USERNAME))
+    username: string;
+
     @IsNotEmpty(toErrString(UserErrors.USER_400_EMPTY_EMAIL))
     email: string;
 

@@ -33,6 +33,7 @@ import { SuccessResponse } from "../../../core/responses";
 import { VerificationType } from "../enums/verification-type.enum";
 import { RequestResetDto } from "../dtos/request-reset.dto";
 import { ResetPasswordDto } from "../dtos/reset-password.dto";
+import { UpdateTutorDto } from "../dtos/update-tutor.dto";
 
 export const ACCESS_TOKEN_COOKIE_NAME = "Authorization";
 export const REFRESH_TOKEN_COOKIE_NAME = "Refresh";
@@ -100,12 +101,20 @@ export class AuthService {
         return user;
     }
 
+    updateUser(id: number, updateUserDto: Partial<User>, updatedBy?: User, manager?: EntityManager): Promise<User> {
+        return this.userService.update(id, { ...updateUserDto, updatedBy }, undefined, manager);
+    }
+
     async createTutor(createTutorDto: CreateTutorDto, createdBy: User): Promise<User> {
         const tutor = await this.tutorRepository.save({ createdBy });
         return await this.registerUser(
             { ...createTutorDto, status: Status.ACTIVE, role: Role.TUTOR, tutor },
             createdBy,
         );
+    }
+
+    async updateTutor(id: number, updateTutorDto: UpdateTutorDto, updatedBy: User): Promise<User> {
+        return await this.updateUser(id, updateTutorDto, updatedBy);
     }
 
     async authenticate(username: string, password: string): Promise<User> {

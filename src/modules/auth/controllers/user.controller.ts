@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { User } from "../entities";
-import { UpdateUserDto, CreateUserDto, UpdateMeDto, UpdateUserRoleDto } from "../dtos";
+import { CreateUserDto, UpdateMeDto, UpdateUserDto, UpdateUserRoleDto } from "../dtos";
 import { Pager, ReqUser, Roles, Sorter } from "../../../core/decorators";
 import { IPaginatedResponse, IPagination, ISort, IStatusResponse } from "../../../core/entity";
 import { Role } from "../enums";
@@ -12,17 +12,11 @@ import { RoleGuard } from "../../../core/guards/role.guard";
 import { CreateTutorDto } from "../dtos/create-tutor.dto";
 import { FilterUserDto } from "../../../elms/modules/class-room/dtos";
 import { userRelations } from "../repositories";
+import { UpdateTutorDto } from "../dtos/update-tutor.dto";
 
 @Controller(Endpoint.USER)
 export class UserController {
     constructor(private readonly authService: AuthService, private readonly userService: UserService) {}
-
-    @Post("tutor")
-    @UseGuards(JwtAuthGuard, RoleGuard)
-    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
-    async createTutor(@ReqUser() createdBy: User, @Body() createTutorDto: CreateTutorDto): Promise<User> {
-        return await this.authService.createTutor(createTutorDto, createdBy);
-    }
 
     @UseGuards(JwtAuthGuard, RoleGuard)
     @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.STUDENT)
@@ -40,6 +34,31 @@ export class UserController {
             search: keyword ? { name: keyword } : {},
             relations: userRelations,
         });
+    }
+
+    @Post("tutor")
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+    async createTutor(@ReqUser() createdBy: User, @Body() createTutorDto: CreateTutorDto): Promise<User> {
+        return await this.authService.createTutor(createTutorDto, createdBy);
+    }
+
+    @Patch("tutor/:id")
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+    async updateTutor(
+        @Param("id", ParseIntPipe) id: number,
+        @ReqUser() updatedBy: User,
+        @Body() updateTutorDto: UpdateTutorDto,
+    ): Promise<User> {
+        return await this.authService.updateTutor(id, updateTutorDto, updatedBy);
+    }
+
+    @Delete("tutor/:id")
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+    async deleteTutor(@Param("id", ParseIntPipe) id: number, @ReqUser() deletedBy: User): Promise<User> {
+        return await this.userService.delete(id, deletedBy, true);
     }
 
     @UseGuards(JwtAuthGuard)
